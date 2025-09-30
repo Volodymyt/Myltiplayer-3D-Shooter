@@ -18,5 +18,5 @@ namespace Installers
             Container.BindFactory<GlobalStateMachine, BootState, BootState.Factory>().AsSingle();
             Container.BindFactory<GlobalStateMachine, MainState, MainState.Factory>().AsSingle();
         }
-    }
+    }  
 }
