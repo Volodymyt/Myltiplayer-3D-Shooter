@@ -1,10 +1,8 @@
+using StateMachine.Base;
 using UnityEngine;
 using Zenject;
-using StateMachine.Base;
-using StateMachine.Global;
-using StateMachine.Global.States;
 
-namespace States
+namespace StateMachine.Global.States
 {
     public class BootState : State
     {
@@ -19,7 +17,7 @@ namespace States
         {
             Debug.Log("enter boot state");
 
-            _stateMachine.ChangeState<MainState>();
+            _stateMachine.ChangeState<MainMenuState>();
         }
 
         public override void Exit()

@@ -5,31 +5,37 @@ using UnityEngine.SceneManagement;
 using Zenject;
 using StateMachine.Base;
 using UI;
-using Zenject.SpaceFighter;
 
 namespace StateMachine.Global.States
 {
-    public class MainState : State
+    public class GameplayerState : StateWithPayload<GameplayPayload>
     {
         private const string SceneName = "Game Scene";
         
         private readonly StateMachineBase _stateMachine;
         private readonly InputService _inputService;
         private readonly UIGameMediator _uiGameMediator;
+        private readonly GameplayMediator _gameplayMediator;
 
-        public MainState(
+        private bool _isHost;
+        
+        public GameplayerState(
             StateMachineBase stateMachine, 
             InputService inputService,
-            UIGameMediator uiGameMediator)
+            UIGameMediator uiGameMediator,
+            GameplayMediator gameplayMediator) : base(stateMachine)
         {
             _stateMachine = stateMachine;
             _inputService = inputService;
             _uiGameMediator = uiGameMediator;
+            _gameplayMediator = gameplayMediator;
         }
 
-        public override void Enter()
+        public override void Enter(GameplayPayload payload)
         {
-            Debug.Log("enter main state");
+            _isHost = payload.IsHost;
+
+            Debug.Log($"Enter GameplayerState | IsHost = {_isHost}");
             Subscribe();
             SceneManager.LoadScene(SceneName);
         }
@@ -39,8 +45,11 @@ namespace StateMachine.Global.States
             if (scene.name == SceneName)
             {
                 _uiGameMediator.Construct();
+                _gameplayMediator.Construct();
                 _inputService.Construct();
-                
+
+                _gameplayMediator.StartNetwork(_isHost);
+
                 SceneManager.sceneLoaded -= OnSceneLoaded;
             }
         }
@@ -60,12 +69,13 @@ namespace StateMachine.Global.States
         public override void Exit()
         {
             _uiGameMediator.Dispose();
+            _gameplayMediator.Dispose();
             Unsubscribe();
             
             _inputService.Dispose();
             Debug.Log("exit application");
         }
 
-        public class Factory : PlaceholderFactory<GlobalStateMachine, MainState> { }
+        public class Factory : PlaceholderFactory<GlobalStateMachine, GameplayerState> { }
     }
 }

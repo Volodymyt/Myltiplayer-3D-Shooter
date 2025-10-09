@@ -56,6 +56,10 @@ namespace Gameplay
                 _inputService.OnKeyboardMoveStart -= HandleKeyboardMoveStart;
                 _inputService.OnKeyboardMoveStop -= HandleKeyboardMoveStop;
             }
+            
+            _isMoving = false;
+            _moveDirection = Vector3.zero;
+            _playerRigidbody = null;
         }
     }
 }

@@ -2,8 +2,8 @@ using Gameplay;
 using Services;
 using StateMachine.Global;
 using StateMachine.Global.States;
-using States;
 using UI;
+using UI.MainMenu;
 using Zenject;
 
 namespace Installers
@@ -13,6 +13,7 @@ namespace Installers
         public override void InstallBindings()
         {
             BindGlobalStateMachine();
+            BindMainMenu();
             BindGameplay();
             BindUI();
             BindServices();
@@ -22,13 +23,14 @@ namespace Installers
         {
             Container.Bind<GlobalStateMachine>().AsSingle();
             Container.BindFactory<GlobalStateMachine, BootState, BootState.Factory>().AsSingle();
-            Container.BindFactory<GlobalStateMachine, MainState, MainState.Factory>().AsSingle();
+            Container.BindFactory<GlobalStateMachine, GameplayerState, GameplayerState.Factory>().AsSingle();
+            Container.BindFactory<GlobalStateMachine, MainMenuState, MainMenuState.Factory>().AsSingle();
         }
 
         private void BindGameplay()
         {
             Container.Bind<NetworkManagerFactory>().AsSingle();
-            Container.BindInterfacesAndSelfTo<PlayerMovement>().AsSingle();
+            Container.Bind<GameplayMediator>().AsSingle();
         }
 
         private void BindUI()
@@ -37,10 +39,17 @@ namespace Installers
             Container.Bind<LobbyFactory>().AsSingle();
         }
 
+        private void BindMainMenu()
+        {
+            Container.Bind<MainMenuMediator>().AsSingle();
+        }
+
         private void BindServices()
         {
             Container.Bind<PlayerInputActions>().AsSingle().NonLazy();
             Container.Bind<InputService>().AsSingle();
+            
+            Container.BindInterfacesAndSelfTo<PlayerMovement>().AsSingle();
             
             Container.Bind<IAssetProviderService>().To<AssetProviderService>().AsSingle();
         }
