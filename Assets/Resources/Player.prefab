@@ -458,6 +458,4 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  moveSpeed: 5
-  playerRigidbody: {fileID: 1455620532479433087}
   playerCamera: {fileID: 3763576586651146598}

@@ -44,7 +44,7 @@ namespace Gameplay
         {
             yield return new WaitUntil(() => NetworkClient.localPlayer != null);
 
-            var player = NetworkClient.localPlayer.gameObject;
+            GameObject player = NetworkClient.localPlayer.gameObject;
             var identity = player.GetComponent<NetworkIdentity>();
 
             yield return new WaitUntil(() => identity.isLocalPlayer);
@@ -56,7 +56,7 @@ namespace Gameplay
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
 
-            _playerMovement.Construct(player.GetComponent<Rigidbody>(), playerCamera.transform, true);
+            _playerMovement.Construct(player, playerCamera.transform, true);
         }
 
         public void Dispose()

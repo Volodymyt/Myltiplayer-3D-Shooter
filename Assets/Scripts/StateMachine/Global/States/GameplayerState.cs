@@ -35,7 +35,6 @@ namespace StateMachine.Global.States
         {
             _isHost = payload.IsHost;
 
-            Debug.Log($"Enter GameplayerState | IsHost = {_isHost}");
             Subscribe();
             SceneManager.LoadScene(SceneName);
         }
@@ -70,9 +69,10 @@ namespace StateMachine.Global.States
         {
             _uiGameMediator.Dispose();
             _gameplayMediator.Dispose();
+            _inputService.Dispose();
+            
             Unsubscribe();
             
-            _inputService.Dispose();
             Debug.Log("exit application");
         }
 
