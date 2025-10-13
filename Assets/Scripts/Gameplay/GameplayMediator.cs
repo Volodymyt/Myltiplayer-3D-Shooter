@@ -1,8 +1,8 @@
 using System;
 using System.Collections;
 using Mirror;
-using Services;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Gameplay
 {
@@ -12,6 +12,7 @@ namespace Gameplay
         private readonly PlayerMovement _playerMovement;
 
         private NetworkManager _networkManager;
+        private Camera _sceneCamera;
 
         public GameplayMediator(
             NetworkManagerFactory networkManagerFactory,
@@ -25,6 +26,8 @@ namespace Gameplay
         {
             _networkManager = _networkManagerFactory.CreateNetworkManager();
             NetworkManager.singleton = _networkManager;
+
+            _sceneCamera = Camera.main;
         }
 
         public void StartNetwork(bool isHost)
@@ -41,16 +44,26 @@ namespace Gameplay
         {
             yield return new WaitUntil(() => NetworkClient.localPlayer != null);
 
-            GameObject player = NetworkClient.localPlayer.gameObject;
-            bool isLocal = player.GetComponent<NetworkIdentity>().isLocalPlayer;
-            _playerMovement.Construct(player.GetComponent<Rigidbody>(), isLocal);
-        }
+            var player = NetworkClient.localPlayer.gameObject;
+            var identity = player.GetComponent<NetworkIdentity>();
 
+            yield return new WaitUntil(() => identity.isLocalPlayer);
+
+            _sceneCamera.enabled = false;
+            var playerCamera = player.GetComponentInChildren<Camera>(true);
+            playerCamera.enabled = true;
+
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+
+            _playerMovement.Construct(player.GetComponent<Rigidbody>(), playerCamera.transform, true);
+        }
 
         public void Dispose()
         {
-            if (_networkManager != null)
-                _networkManager.StopAllCoroutines();
+            _sceneCamera.enabled = true;
+
+            _networkManager.StopAllCoroutines();
 
             if (NetworkServer.active)
                 _networkManager.StopHost();
@@ -60,11 +73,10 @@ namespace Gameplay
             if (NetworkManager.singleton == _networkManager)
                 NetworkManager.singleton = null;
 
-            _playerMovement?.Dispose();
+            Object.Destroy(_networkManager.gameObject);
 
-            if (_networkManager != null)
-                UnityEngine.Object.Destroy(_networkManager.gameObject);
-
+            _playerMovement.Dispose();
+            
             _networkManager = null;
         }
     }

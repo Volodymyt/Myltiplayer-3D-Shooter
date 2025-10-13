@@ -50,8 +50,8 @@ MonoBehaviour:
   headlessStartMode: 0
   editorAutoStart: 0
   sendRate: 60
-  offlineScene: 
-  onlineScene: 
+  offlineScene: Assets/Scenes/Main Menu Scene.unity
+  onlineScene: Assets/Scenes/Game Scene.unity
   offlineSceneLoadDelay: 0
   transport: {fileID: 7794776549721438032}
   networkAddress: localhost

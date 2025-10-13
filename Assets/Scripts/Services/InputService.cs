@@ -9,38 +9,49 @@ namespace Services
         
         public event Action<KeyboardContext> OnKeyboardMoveStop;
 
-        private readonly PlayerInputActions _inputActions;
+        public event Action<MouseContext> OnMouseLook;
 
+        private readonly PlayerInputActions _inputActions;
         private KeyboardContext _keyboardContext;
-        
+        private MouseContext _mouseContext;
+
         public InputService(PlayerInputActions inputActions)
         {
             _inputActions = inputActions;
         }
-        
+
         public void Construct()
         {
             _keyboardContext = new KeyboardContext(_inputActions);
+            _mouseContext = new MouseContext(_inputActions);
 
             _inputActions.Keyboard.Move.performed += HandleKeyboardMoveStarted;
             _inputActions.Keyboard.Move.canceled += HandleKeyboardMoveCanceled;
             _inputActions.Keyboard.Enable();
-        }
-        
-        private void HandleKeyboardMoveStarted(InputAction.CallbackContext context) =>
-            OnKeyboardMoveStart?.Invoke(_keyboardContext);
 
-        private void HandleKeyboardMoveCanceled(InputAction.CallbackContext context) =>
-            OnKeyboardMoveStop?.Invoke(_keyboardContext);
-        
+            _inputActions.Mouse.Look.performed += HandleMouseLook;
+            _inputActions.Mouse.Enable();
+        }
+
+        private void HandleKeyboardMoveStarted(InputAction.CallbackContext context)
+            => OnKeyboardMoveStart?.Invoke(_keyboardContext);
+
+        private void HandleKeyboardMoveCanceled(InputAction.CallbackContext context)
+            => OnKeyboardMoveStop?.Invoke(_keyboardContext);
+
+        private void HandleMouseLook(InputAction.CallbackContext context)
+            => OnMouseLook?.Invoke(_mouseContext);
+
         public void Dispose()
         {
-            if (_inputActions != null)
-            {
-                _inputActions.Keyboard.Move.performed -= HandleKeyboardMoveStarted;
-                _inputActions.Keyboard.Move.canceled -= HandleKeyboardMoveCanceled;
-                _inputActions.Keyboard.Disable();
-            }
+            if (_inputActions == null) return;
+
+            _inputActions.Keyboard.Move.performed -= HandleKeyboardMoveStarted;
+            _inputActions.Keyboard.Move.canceled -= HandleKeyboardMoveCanceled;
+            _inputActions.Mouse.Look.performed -= HandleMouseLook;
+
+            _inputActions.Keyboard.Disable();
+            _inputActions.Mouse.Disable();
         }
     }
 }
