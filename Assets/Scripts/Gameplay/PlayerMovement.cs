@@ -22,6 +22,10 @@ namespace Gameplay
         private Animator _playerAnimator;
 
         private readonly LayerMask _groundLayer = LayerMask.GetMask("Ground");
+        private readonly float _landingLockDuration = 0.6f;
+        private bool _canJump = true;
+        private float _jumpLockTimer = 0f;
+        private bool _wasGroundedLastFrame = true;
         private bool _isGrounded;
         private Collider _playerCollider;
 
@@ -29,7 +33,6 @@ namespace Gameplay
         private Vector2 _currentLook;
         private Vector2 _lookVelocity;
         private Transform _cameraTransform;
-        private bool _isGrounded2;
 
         public PlayerMovement(InputService inputService)
         {
@@ -56,20 +59,10 @@ namespace Gameplay
             if (!_isLocalPlayer || _playerRigidbody == null)
                 return;
 
-            _isGrounded = Physics.Raycast(
-                _playerRigidbody.position + Vector3.up * 0.05f,
-                Vector3.down,
-                _playerCollider.bounds.extents.y + 0.1f,
-                _groundLayer);
-            
-            _isGrounded2 = Physics.Raycast(
-                _playerRigidbody.position + Vector3.up * 0.05f,
-                Vector3.down,
-                _playerCollider.bounds.extents.y + 0.5f,
-                _groundLayer);
-            
-            Debug.Log(_isGrounded);
-            
+            _isGrounded = CheckGround(Constants.PlayerSettings.RigidbodyGroundCheckDistance);
+
+            HandleLandingLock();
+
             if (_isMoving)
             {
                 Vector3 move = _playerRigidbody.transform.TransformDirection(_moveDirection)
@@ -82,10 +75,56 @@ namespace Gameplay
             {
                 PlayMoveAnimation(new Vector3(0, 0, 0));
             }
-            
+
             _playerAnimator.SetFloat(MoveY, _playerRigidbody.linearVelocity.y);
-            _playerAnimator.SetBool(IsGrounded, _isGrounded2);
+            _playerAnimator.SetBool(IsGrounded, CheckGround(Constants.PlayerSettings.AnimatorGroundCheckDistance));
         }
+
+        #region Jump
+
+        private void HandleKeyboardJump()
+        {
+            if (!_isLocalPlayer || !_isGrounded || !_canJump)
+                return;
+
+            _playerRigidbody.AddForce(
+                Vector3.up * Constants.PlayerSettings.JumpForce,
+                ForceMode.Impulse);
+
+            _playerAnimator.SetTrigger(JumpTrigger);
+        }
+
+        private bool CheckGround(float distance)
+        {
+            bool isGrounded = Physics.Raycast(
+                _playerRigidbody.position + Vector3.up * 0.05f,
+                Vector3.down,
+                _playerCollider.bounds.extents.y + distance,
+                _groundLayer);
+
+            return isGrounded;
+        }
+
+        private void HandleLandingLock()
+        {
+            bool landedThisFrame = _isGrounded && !_wasGroundedLastFrame;
+
+            if (landedThisFrame)
+            {
+                _canJump = false;
+                _jumpLockTimer = _landingLockDuration;
+            }
+
+            if (_jumpLockTimer > 0f)
+            {
+                _jumpLockTimer -= Time.deltaTime;
+                _canJump = _jumpLockTimer <= 0f;
+            }
+
+            _wasGroundedLastFrame = _isGrounded;
+        }
+
+        #endregion
 
         private void PlayMoveAnimation(Vector3 moveDirection)
         {
@@ -97,18 +136,6 @@ namespace Gameplay
 
             _playerAnimator.SetFloat(MoveX, smoothX);
             _playerAnimator.SetFloat(MoveZ, smoothY);
-        }
-
-        private void HandleKeyboardJump()
-        {
-            if (!_isLocalPlayer || !_isGrounded)
-                return;
-            
-            _playerRigidbody.AddForce(
-                Vector3.up * Constants.PlayerSettings.JumpForce,
-                ForceMode.Impulse);
-            
-            _playerAnimator.SetTrigger(JumpTrigger);
         }
 
         private void HandleKeyboardMoveStart(KeyboardContext context)
