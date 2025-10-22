@@ -45,18 +45,19 @@ namespace Gameplay
             yield return new WaitUntil(() => NetworkClient.localPlayer != null);
 
             GameObject player = NetworkClient.localPlayer.gameObject;
-            var identity = player.GetComponent<NetworkIdentity>();
+            PlayerView playerView = player.GetComponent<PlayerView>();
+            var identity = playerView.playerNetworkIdentity;
 
             yield return new WaitUntil(() => identity.isLocalPlayer);
 
             _sceneCamera.enabled = false;
-            var playerCamera = player.GetComponentInChildren<Camera>(true);
+            var playerCamera = playerView.playerCamera;
             playerCamera.enabled = true;
 
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
 
-            _playerMovement.Construct(player, playerCamera.transform, true);
+            _playerMovement.Construct(playerView, true);
         }
 
         public void Dispose()
