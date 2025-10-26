@@ -10,6 +10,7 @@ namespace Gameplay
         public Rigidbody playerRigidbody;
         public Collider playerCollider;
         public NetworkIdentity playerNetworkIdentity;
+        public Transform spearThrowTransform;
 
         private void Start()
         {

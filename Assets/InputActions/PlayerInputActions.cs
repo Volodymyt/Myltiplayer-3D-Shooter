@@ -192,6 +192,15 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""ReleaseSpear"",
+                    ""type"": ""Button"",
+                    ""id"": ""03129482-57e0-4e6a-8200-6adac2402f8e"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -203,6 +212,17 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Look"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""784789b4-85c0-4d9a-99ee-efb841e114a7"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ReleaseSpear"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -218,6 +238,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         // Mouse
         m_Mouse = asset.FindActionMap("Mouse", throwIfNotFound: true);
         m_Mouse_Look = m_Mouse.FindAction("Look", throwIfNotFound: true);
+        m_Mouse_ReleaseSpear = m_Mouse.FindAction("ReleaseSpear", throwIfNotFound: true);
     }
 
     ~@PlayerInputActions()
@@ -407,6 +428,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputActionMap m_Mouse;
     private List<IMouseActions> m_MouseActionsCallbackInterfaces = new List<IMouseActions>();
     private readonly InputAction m_Mouse_Look;
+    private readonly InputAction m_Mouse_ReleaseSpear;
     /// <summary>
     /// Provides access to input actions defined in input action map "Mouse".
     /// </summary>
@@ -422,6 +444,10 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Mouse/Look".
         /// </summary>
         public InputAction @Look => m_Wrapper.m_Mouse_Look;
+        /// <summary>
+        /// Provides access to the underlying input action "Mouse/ReleaseSpear".
+        /// </summary>
+        public InputAction @ReleaseSpear => m_Wrapper.m_Mouse_ReleaseSpear;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -451,6 +477,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Look.started += instance.OnLook;
             @Look.performed += instance.OnLook;
             @Look.canceled += instance.OnLook;
+            @ReleaseSpear.started += instance.OnReleaseSpear;
+            @ReleaseSpear.performed += instance.OnReleaseSpear;
+            @ReleaseSpear.canceled += instance.OnReleaseSpear;
         }
 
         /// <summary>
@@ -465,6 +494,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Look.started -= instance.OnLook;
             @Look.performed -= instance.OnLook;
             @Look.canceled -= instance.OnLook;
+            @ReleaseSpear.started -= instance.OnReleaseSpear;
+            @ReleaseSpear.performed -= instance.OnReleaseSpear;
+            @ReleaseSpear.canceled -= instance.OnReleaseSpear;
         }
 
         /// <summary>
@@ -534,5 +566,12 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnLook(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "ReleaseSpear" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnReleaseSpear(InputAction.CallbackContext context);
     }
 }

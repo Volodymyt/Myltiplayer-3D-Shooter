@@ -2,6 +2,7 @@ public class Constants
 {
     // Gameplay
     public const string NetworkManagerPath = "NetworkManager";
+    public const string SpearPath = "Spear";
     
     // UI
     public const string LobbyPath = "Lobby";

@@ -10,6 +10,10 @@ namespace Services
         public event Action OnKeyboardJump;
 
         public event Action<MouseContext> OnMouseLook;
+        public event Action OnMouseLeftButtonDown;
+        //public event Action OnMouseLeftButtonHold;
+        public event Action OnMouseLeftButtonUp;
+
 
         private readonly PlayerInputActions _inputActions;
         private KeyboardContext _keyboardContext;
@@ -31,6 +35,8 @@ namespace Services
             _inputActions.Keyboard.Enable();
 
             _inputActions.Mouse.Look.performed += HandleMouseLook;
+            _inputActions.Mouse.ReleaseSpear.performed += HandleMouseLeftButtonDown;
+            _inputActions.Mouse.ReleaseSpear.canceled += HandleMouseLeftButtonUp;
             _inputActions.Mouse.Enable();
         }
 
@@ -39,12 +45,21 @@ namespace Services
 
         private void HandleKeyboardMoveCanceled(InputAction.CallbackContext context)
             => OnKeyboardMoveStop?.Invoke(_keyboardContext);
-        
+
         private void HandleJump(InputAction.CallbackContext context)
             => OnKeyboardJump?.Invoke();
 
         private void HandleMouseLook(InputAction.CallbackContext context)
             => OnMouseLook?.Invoke(_mouseContext);
+
+        private void HandleMouseLeftButtonDown(InputAction.CallbackContext context)
+            => OnMouseLeftButtonDown?.Invoke();
+
+        // private void HandleMouseLeftButtonHold(InputAction.CallbackContext context)
+        //     => OnMouseLeftButtonHold?.Invoke();
+
+        private void HandleMouseLeftButtonUp(InputAction.CallbackContext context)
+            => OnMouseLeftButtonUp?.Invoke();
 
         public void Dispose()
         {
@@ -53,7 +68,10 @@ namespace Services
             _inputActions.Keyboard.Move.performed -= HandleKeyboardMoveStarted;
             _inputActions.Keyboard.Move.canceled -= HandleKeyboardMoveCanceled;
             _inputActions.Keyboard.Jump.performed -= HandleJump;
+            
             _inputActions.Mouse.Look.performed -= HandleMouseLook;
+            _inputActions.Mouse.ReleaseSpear.performed -= HandleMouseLeftButtonDown;
+            _inputActions.Mouse.ReleaseSpear.canceled -= HandleMouseLeftButtonUp;
 
             _inputActions.Keyboard.Disable();
             _inputActions.Mouse.Disable();

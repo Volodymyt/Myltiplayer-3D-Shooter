@@ -931,6 +931,37 @@ Transform:
   - {fileID: 2656242354300719463}
   m_Father: {fileID: 2705855297766851613}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &3344105299478356256
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2670369932248608118}
+  m_Layer: 0
+  m_Name: SpearThrowPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2670369932248608118
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3344105299478356256}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: -0.7071068, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: -0.00003, y: 0.000206, z: -0.000274}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8674200476188435215}
+  m_LocalEulerAnglesHint: {x: 0, y: -90, z: 0}
 --- !u!1 &3410084600869085147
 GameObject:
   m_ObjectHideFlags: 0
@@ -1120,6 +1151,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7840054364680476005}
+  - {fileID: 2670369932248608118}
   m_Father: {fileID: 1554800357700243141}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6119817790284607045
@@ -1370,6 +1402,7 @@ MonoBehaviour:
   playerRigidbody: {fileID: 8182685864733495448}
   playerCollider: {fileID: 8572785783132280600}
   playerNetworkIdentity: {fileID: 2588845214554340446}
+  spearThrowTransform: {fileID: 2670369932248608118}
 --- !u!114 &2588845214554340446
 MonoBehaviour:
   m_ObjectHideFlags: 0

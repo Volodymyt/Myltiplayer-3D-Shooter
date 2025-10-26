@@ -31,6 +31,7 @@ namespace Installers
         {
             Container.Bind<NetworkManagerFactory>().AsSingle();
             Container.Bind<GameplayMediator>().AsSingle();
+            Container.Bind<SpearFactory>().AsSingle();
         }
 
         private void BindUI()
@@ -50,6 +51,7 @@ namespace Installers
             Container.Bind<InputService>().AsSingle();
             
             Container.BindInterfacesAndSelfTo<PlayerMovement>().AsSingle();
+            Container.BindInterfacesAndSelfTo<SpearThrow>().AsSingle();
             
             Container.Bind<IAssetProviderService>().To<AssetProviderService>().AsSingle();
         }

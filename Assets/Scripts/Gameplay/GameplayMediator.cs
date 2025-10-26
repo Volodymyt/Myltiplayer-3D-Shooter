@@ -10,16 +10,19 @@ namespace Gameplay
     {
         private readonly NetworkManagerFactory _networkManagerFactory;
         private readonly PlayerMovement _playerMovement;
+        private readonly SpearThrow _spearThrow;
 
         private NetworkManager _networkManager;
         private Camera _sceneCamera;
 
         public GameplayMediator(
             NetworkManagerFactory networkManagerFactory,
-            PlayerMovement playerMovement)
+            PlayerMovement playerMovement,
+            SpearThrow spearThrow)
         {
             _networkManagerFactory = networkManagerFactory;
             _playerMovement = playerMovement;
+            _spearThrow = spearThrow;
         }
 
         public void Construct()
@@ -58,6 +61,7 @@ namespace Gameplay
             Cursor.visible = false;
 
             _playerMovement.Construct(playerView, true);
+            _spearThrow.Construct(playerView.spearThrowTransform);
         }
 
         public void Dispose()
