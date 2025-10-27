@@ -1,5 +1,6 @@
 using Mirror;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Gameplay
 {
@@ -10,7 +11,7 @@ namespace Gameplay
         public Rigidbody playerRigidbody;
         public Collider playerCollider;
         public NetworkIdentity playerNetworkIdentity;
-        public Transform spearThrowTransform;
+        public Transform spearThrowPoint;
 
         private void Start()
         {

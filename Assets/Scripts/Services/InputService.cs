@@ -11,7 +11,6 @@ namespace Services
 
         public event Action<MouseContext> OnMouseLook;
         public event Action OnMouseLeftButtonDown;
-        //public event Action OnMouseLeftButtonHold;
         public event Action OnMouseLeftButtonUp;
 
 
@@ -54,9 +53,6 @@ namespace Services
 
         private void HandleMouseLeftButtonDown(InputAction.CallbackContext context)
             => OnMouseLeftButtonDown?.Invoke();
-
-        // private void HandleMouseLeftButtonHold(InputAction.CallbackContext context)
-        //     => OnMouseLeftButtonHold?.Invoke();
 
         private void HandleMouseLeftButtonUp(InputAction.CallbackContext context)
             => OnMouseLeftButtonUp?.Invoke();
