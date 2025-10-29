@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using Mirror;
+using Services;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -8,7 +9,7 @@ namespace Gameplay
 {
     public class GameplayMediator : IDisposable
     {
-        private readonly NetworkManagerFactory _networkManagerFactory;
+        private readonly GenericFactory _genericFactory;
         private readonly PlayerMovement _playerMovement;
         private readonly SpearThrow _spearThrow;
 
@@ -16,18 +17,18 @@ namespace Gameplay
         private Camera _sceneCamera;
 
         public GameplayMediator(
-            NetworkManagerFactory networkManagerFactory,
+            GenericFactory genericFactory,
             PlayerMovement playerMovement,
             SpearThrow spearThrow)
         {
-            _networkManagerFactory = networkManagerFactory;
+            _genericFactory = genericFactory;
             _playerMovement = playerMovement;
             _spearThrow = spearThrow;
         }
 
         public void Construct()
         {
-            _networkManager = _networkManagerFactory.CreateNetworkManager();
+            _networkManager = _genericFactory.Create<NetworkManager>(Constants.NetworkManagerPath);
             NetworkManager.singleton = _networkManager;
 
             _sceneCamera = Camera.main;

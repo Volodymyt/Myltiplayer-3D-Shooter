@@ -1,23 +1,24 @@
 using System;
+using Services;
 
 namespace UI.MainMenu
 {
     public class MainMenuMediator : IDisposable
     {
-        private readonly LobbyFactory _lobbyFactory;
+        private readonly GenericFactory _genericFactory;
         private Lobby _lobby;
 
         public event Action HostSelected;
         public event Action ClientSelected;
 
-        public MainMenuMediator(LobbyFactory lobbyFactory)
+        public MainMenuMediator(GenericFactory genericFactory)
         {
-            _lobbyFactory = lobbyFactory;
+            _genericFactory = genericFactory;
         }
 
         public void Construct()
         {
-            _lobby = _lobbyFactory.CreateLobby();
+            _lobby = _genericFactory.Create<Lobby>(Constants.LobbyPath);
 
             _lobby.OnHostAddRequest += OnHost;
             _lobby.OnClientAddRequest += OnClient;

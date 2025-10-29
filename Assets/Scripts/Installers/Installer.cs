@@ -29,15 +29,12 @@ namespace Installers
 
         private void BindGameplay()
         {
-            Container.Bind<NetworkManagerFactory>().AsSingle();
             Container.Bind<GameplayMediator>().AsSingle();
-            Container.Bind<SpearFactory>().AsSingle();
         }
 
         private void BindUI()
         {
             Container.Bind<UIGameMediator>().AsSingle();
-            Container.Bind<LobbyFactory>().AsSingle();
         }
 
         private void BindMainMenu()
@@ -49,6 +46,8 @@ namespace Installers
         {
             Container.Bind<PlayerInputActions>().AsSingle().NonLazy();
             Container.Bind<InputService>().AsSingle();
+
+            Container.Bind<GenericFactory>().AsSingle();
             
             Container.BindInterfacesAndSelfTo<PlayerMovement>().AsSingle();
             Container.BindInterfacesAndSelfTo<SpearThrow>().AsSingle();

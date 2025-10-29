@@ -11,7 +11,7 @@ namespace Gameplay
         private static readonly int Throw = Animator.StringToHash("Throw");
         
         private readonly InputService _inputService;
-        private readonly SpearFactory _spearFactory;
+        private readonly GenericFactory _genericFactory;
 
         private readonly LayerMask _playerLayer = LayerMask.GetMask("Player");
         private Animator _playerAnimator;
@@ -31,10 +31,10 @@ namespace Gameplay
         private bool _isWaitingForSpearRespawn;
         private bool _isAnimationCharging;
 
-        public SpearThrow(InputService inputService, SpearFactory spearFactory)
+        public SpearThrow(InputService inputService, GenericFactory genericFactory)
         {
             _inputService = inputService;
-            _spearFactory = spearFactory;
+            _genericFactory = genericFactory;
         }
 
         public void Construct(PlayerView playerView)
@@ -179,7 +179,7 @@ namespace Gameplay
 
         private void SpawnNewSpear()
         {
-            _currentSpear = _spearFactory.CreateSpear();
+            _currentSpear = _genericFactory.Create<Transform>(Constants.SpearPath);
             _currentSpear.SetParent(_throwPoint);
             _currentSpear.localPosition = Vector3.zero;
             _currentSpear.transform.localRotation = Quaternion.Euler(180, 0, 0);
