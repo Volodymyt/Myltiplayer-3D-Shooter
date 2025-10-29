@@ -9,7 +9,7 @@ namespace Gameplay
         private void FixedUpdate()
         {
             if (_rigidbody.linearVelocity.sqrMagnitude > 0.1f)
-                transform.forward = Vector3.Lerp(transform.forward, _rigidbody.linearVelocity.normalized, Time.fixedDeltaTime * 10f);
+                transform.forward = Vector3.Lerp(transform.forward, -_rigidbody.linearVelocity.normalized, Time.fixedDeltaTime * 10f);
         }
     }
 }

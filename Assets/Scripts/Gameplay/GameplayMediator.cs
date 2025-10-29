@@ -61,7 +61,7 @@ namespace Gameplay
             Cursor.visible = false;
 
             _playerMovement.Construct(playerView, true);
-            _spearThrow.Construct(playerView.spearThrowPoint, playerCamera);
+            _spearThrow.Construct(playerView);
         }
 
         public void Dispose()

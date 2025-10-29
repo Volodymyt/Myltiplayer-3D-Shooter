@@ -8,23 +8,28 @@ namespace Gameplay
 {
     public class SpearThrow : IDisposable, ITickable
     {
+        private static readonly int Throw = Animator.StringToHash("Throw");
+        
         private readonly InputService _inputService;
         private readonly SpearFactory _spearFactory;
 
         private readonly LayerMask _playerLayer = LayerMask.GetMask("Player");
-
+        private Animator _playerAnimator;
         private Transform _throwPoint;
         private Transform _currentSpear;
         private Camera _playerCamera;
         private LineRenderer _trajectoryLine;
 
         private const int TrajectoryPoints = 50;
+        private const int ThrowAnimationLayer = 1;
         private const float TimeStep = 0.1f;
         private const float HalfAccelerationFactor = 0.5f;
+        private const float ChargePausePoint = 0.25f;
 
-        private float _respawnTimer;
+        private float _spearRespawnTimer;
         private bool _isThrowing;
-        private bool _isWaitingForRespawn;
+        private bool _isWaitingForSpearRespawn;
+        private bool _isAnimationCharging;
 
         public SpearThrow(InputService inputService, SpearFactory spearFactory)
         {
@@ -32,10 +37,11 @@ namespace Gameplay
             _spearFactory = spearFactory;
         }
 
-        public void Construct(Transform throwPoint, Camera playerCamera)
+        public void Construct(PlayerView playerView)
         {
-            _throwPoint = throwPoint;
-            _playerCamera = playerCamera;
+            _throwPoint = playerView.spearThrowPoint;
+            _playerCamera = playerView.playerCamera;
+            _playerAnimator = playerView.playerAnimator;
 
             SpawnNewSpear();
             CreateTrajectoryLine();
@@ -47,6 +53,7 @@ namespace Gameplay
         public void Tick()
         {
             HandleRespawnTimer();
+            HandleChargingAnimation();
 
             if (_isThrowing && _currentSpear != null)
                 DrawTrajectory();
@@ -56,17 +63,39 @@ namespace Gameplay
 
         private void HandleRespawnTimer()
         {
-            if (!_isWaitingForRespawn) return;
+            if (!_isWaitingForSpearRespawn) return;
 
-            _respawnTimer -= Time.deltaTime;
-            if (_respawnTimer <= 0f)
+            _spearRespawnTimer -= Time.deltaTime;
+            if (_spearRespawnTimer <= 0f)
             {
                 SpawnNewSpear();
-                _isWaitingForRespawn = false;
+                _isWaitingForSpearRespawn = false;
             }
         }
 
-        #region Trajectory
+        private void HandleChargingAnimation()
+        {
+            if (!_isThrowing) return;
+
+            var stateInfo = _playerAnimator.GetCurrentAnimatorStateInfo(ThrowAnimationLayer);
+
+            if (_isAnimationCharging)
+            {
+                if (stateInfo.normalizedTime >= ChargePausePoint)
+                {
+                    _playerAnimator.Play(Throw, ThrowAnimationLayer, ChargePausePoint);
+                    _playerAnimator.Update(0f);
+                }
+            }
+            else
+            {
+                if (stateInfo.normalizedTime >= 0.36f)
+                {
+                    ThrowSpear();
+                    _isThrowing = false;
+                }
+            }
+        }
 
         private void CreateTrajectoryLine()
         {
@@ -105,25 +134,24 @@ namespace Gameplay
                 _trajectoryLine.positionCount = 0;
         }
 
-        #endregion
-
-        #region Throw Handling
-
         private void HandleSpearThrowStart()
         {
-            if (_isWaitingForRespawn || _currentSpear == null)
+            if (_isWaitingForSpearRespawn || _currentSpear == null)
                 return;
 
+            _playerAnimator.Play(Throw, ThrowAnimationLayer, 0f);
+            _playerAnimator.Update(0f);
             _isThrowing = true;
+            _isAnimationCharging = true;
         }
 
         private void HandleSpearThrowStop()
         {
-            if (!_isThrowing || _currentSpear == null)
+            if (!_isThrowing)
                 return;
 
-            _isThrowing = false;
-            ThrowSpear();
+            _isAnimationCharging = false;
+            _playerAnimator.speed = 1f;
         }
 
         private void ThrowSpear()
@@ -141,12 +169,12 @@ namespace Gameplay
 
             Vector3 arcedDir = CalculateThrowDirection();
 
-            _currentSpear.forward = arcedDir;
+            _currentSpear.forward = -arcedDir;
             rigidbody.linearVelocity = arcedDir * Constants.PlayerSettings.ThrowForce;
 
             _currentSpear = null;
-            _isWaitingForRespawn = true;
-            _respawnTimer = Constants.PlayerSettings.RespawnDelay;
+            _isWaitingForSpearRespawn = true;
+            _spearRespawnTimer = Constants.PlayerSettings.RespawnDelay;
         }
 
         private void SpawnNewSpear()
@@ -154,10 +182,8 @@ namespace Gameplay
             _currentSpear = _spearFactory.CreateSpear();
             _currentSpear.SetParent(_throwPoint);
             _currentSpear.localPosition = Vector3.zero;
-            _currentSpear.localRotation = Quaternion.identity;
+            _currentSpear.transform.localRotation = Quaternion.Euler(180, 0, 0);
         }
-
-        #endregion
 
         private Vector3 CalculateThrowDirection()
         {
