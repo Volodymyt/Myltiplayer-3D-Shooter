@@ -15,6 +15,7 @@ namespace Gameplay
 
         private NetworkManager _networkManager;
         private Camera _sceneCamera;
+        private Transform _spearContainer;
 
         public GameplayMediator(
             GenericFactory genericFactory,
@@ -30,7 +31,11 @@ namespace Gameplay
         {
             _networkManager = _genericFactory.Create<NetworkManager>(Constants.NetworkManagerPath);
             NetworkManager.singleton = _networkManager;
+            
+            _spearContainer = new GameObject("SpearsContainer").transform;
 
+            Debug.Log(_spearContainer.name);
+            
             _sceneCamera = Camera.main;
         }
 
@@ -62,7 +67,7 @@ namespace Gameplay
             Cursor.visible = false;
 
             _playerMovement.Construct(playerView, true);
-            _spearThrow.Construct(playerView);
+            _spearThrow.Construct(playerView, _spearContainer);
         }
 
         public void Dispose()

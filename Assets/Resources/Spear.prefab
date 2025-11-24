@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3647612520993505934}
+  - component: {fileID: 2358337871040026458}
   m_Layer: 0
   m_Name: Spear
   m_TagString: Untagged
@@ -32,6 +33,23 @@ Transform:
   - {fileID: 5114837689665070628}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2358337871040026458
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2651736676821518133}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sceneId: 0
+  _assetId: 1248704269
+  serverOnly: 0
+  visibility: 0
+  hasSpawned: 0
 --- !u!1 &5942670740410242328
 GameObject:
   m_ObjectHideFlags: 0
@@ -333,6 +351,7 @@ GameObject:
   - component: {fileID: 7171124247336094928}
   - component: {fileID: 7618089340518583453}
   - component: {fileID: 8473970108277571835}
+  - component: {fileID: 6351519017927063860}
   m_Layer: 0
   m_Name: SpearView
   m_TagString: Untagged
@@ -383,7 +402,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 1
   m_Interpolate: 0
-  m_Constraints: 0
+  m_Constraints: 112
   m_CollisionDetection: 0
 --- !u!114 &8473970108277571835
 MonoBehaviour:
@@ -397,4 +416,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae2b260e25e64139a1500bcefa3ff73f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _rigidbody: {fileID: 7618089340518583453}
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  spearRigidbody: {fileID: 7618089340518583453}
+  emptyParent: {fileID: 3647612520993505934}
+  spearCollider: {fileID: 6351519017927063860}
+--- !u!65 &6351519017927063860
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7959688284107168977}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 0
+  serializedVersion: 3
+  m_Size: {x: 0.02, y: 0.02, z: 1.5700932}
+  m_Center: {x: 0, y: 0.00156595, z: 0.71958256}

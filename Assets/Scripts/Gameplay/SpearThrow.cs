@@ -1,4 +1,5 @@
 using System;
+using Mirror;
 using Services;
 using UnityEngine;
 using Zenject;
@@ -9,7 +10,7 @@ namespace Gameplay
     public class SpearThrow : IDisposable, ITickable
     {
         private static readonly int Throw = Animator.StringToHash("Throw");
-        
+
         private readonly InputService _inputService;
         private readonly GenericFactory _genericFactory;
 
@@ -17,6 +18,7 @@ namespace Gameplay
         private Animator _playerAnimator;
         private Transform _throwPoint;
         private Transform _currentSpear;
+        private Transform _spearContainer;
         private Camera _playerCamera;
         private LineRenderer _trajectoryLine;
 
@@ -26,6 +28,7 @@ namespace Gameplay
         private const float HalfAccelerationFactor = 0.5f;
         private const float ChargePausePoint = 0.25f;
 
+        private uint _playerNetworkID;
         private float _spearRespawnTimer;
         private bool _isThrowing;
         private bool _isWaitingForSpearRespawn;
@@ -37,11 +40,13 @@ namespace Gameplay
             _genericFactory = genericFactory;
         }
 
-        public void Construct(PlayerView playerView)
+        public void Construct(PlayerView playerView, Transform spearContainer)
         {
             _throwPoint = playerView.spearThrowPoint;
             _playerCamera = playerView.playerCamera;
             _playerAnimator = playerView.playerAnimator;
+            _playerNetworkID = playerView.GetComponent<NetworkIdentity>().netId;
+            _spearContainer = spearContainer;
 
             SpawnNewSpear();
             CreateTrajectoryLine();
@@ -172,6 +177,10 @@ namespace Gameplay
             _currentSpear.forward = -arcedDir;
             rigidbody.linearVelocity = arcedDir * Constants.PlayerSettings.ThrowForce;
 
+            Collider spearCollider = _currentSpear.GetComponentInChildren<Collider>();
+            spearCollider.enabled = true;
+            spearCollider.isTrigger = true;
+
             _currentSpear = null;
             _isWaitingForSpearRespawn = true;
             _spearRespawnTimer = Constants.PlayerSettings.RespawnDelay;
@@ -183,6 +192,9 @@ namespace Gameplay
             _currentSpear.SetParent(_throwPoint);
             _currentSpear.localPosition = Vector3.zero;
             _currentSpear.transform.localRotation = Quaternion.Euler(180, 0, 0);
+            
+            var spearView = _currentSpear.GetComponentInChildren<SpearView>();
+            spearView.Init(_playerNetworkID, _spearContainer);
         }
 
         private Vector3 CalculateThrowDirection()
