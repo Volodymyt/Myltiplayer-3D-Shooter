@@ -22,7 +22,7 @@ namespace Gameplay
         private Animator _playerAnimator;
 
         private readonly LayerMask _groundLayer = LayerMask.GetMask("Ground");
-        private readonly float _landingLockDuration = 0.6f;
+        private readonly float _landingLockDuration = 0.85f;
         private bool _canJump = true;
         private float _jumpLockTimer = 0f;
         private bool _wasGroundedLastFrame = true;
@@ -96,13 +96,17 @@ namespace Gameplay
 
         private bool CheckGround(float distance)
         {
-            bool isGrounded = Physics.Raycast(
-                _playerRigidbody.position + Vector3.up * 0.05f,
-                Vector3.down,
-                _playerCollider.bounds.extents.y + distance,
-                _groundLayer);
+            Vector3 origin = _playerRigidbody.position + Vector3.up * 0.05f;
 
-            return isGrounded;
+            Vector3 sphereCenter = origin + Vector3.down * distance;
+
+            bool grounded = Physics.CheckSphere(
+                sphereCenter,
+                Constants.PlayerSettings.GroundCheckDistance,
+                _groundLayer
+            );
+
+            return grounded;
         }
 
         private void HandleLandingLock()
