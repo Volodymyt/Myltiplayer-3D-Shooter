@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using Mirror;
 using Services;
 using UnityEngine;
@@ -9,13 +8,14 @@ namespace Gameplay
 {
     public class GameplayMediator : IDisposable
     {
+        public static Transform SpearContainer { get; private set; }
+
         private readonly GenericFactory _genericFactory;
         private readonly PlayerMovement _playerMovement;
         private readonly SpearThrow _spearThrow;
 
         private NetworkManager _networkManager;
         private Camera _sceneCamera;
-        private Transform _spearContainer;
 
         public GameplayMediator(
             GenericFactory genericFactory,
@@ -31,12 +31,11 @@ namespace Gameplay
         {
             _networkManager = _genericFactory.Create<NetworkManager>(Constants.NetworkManagerPath);
             NetworkManager.singleton = _networkManager;
-            
-            _spearContainer = new GameObject("SpearsContainer").transform;
 
-            Debug.Log(_spearContainer.name);
-            
+            SpearContainer = new GameObject("SpearsContainer").transform;
             _sceneCamera = Camera.main;
+
+            PlayerView.LocalPlayerStarted += HandleLocalPlayerStarted;
         }
 
         public void StartNetwork(bool isHost)
@@ -45,36 +44,25 @@ namespace Gameplay
                 _networkManager.StartHost();
             else
                 _networkManager.StartClient();
-
-            _networkManager.StartCoroutine(WaitForPlayer());
         }
 
-        private IEnumerator WaitForPlayer()
+        private void HandleLocalPlayerStarted(PlayerView playerView)
         {
-            yield return new WaitUntil(() => NetworkClient.localPlayer != null);
-
-            GameObject player = NetworkClient.localPlayer.gameObject;
-            PlayerView playerView = player.GetComponent<PlayerView>();
-            var identity = playerView.playerNetworkIdentity;
-
-            yield return new WaitUntil(() => identity.isLocalPlayer);
-
             _sceneCamera.enabled = false;
-            var playerCamera = playerView.playerCamera;
-            playerCamera.enabled = true;
+            playerView.playerCamera.enabled = true;
 
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
 
             _playerMovement.Construct(playerView, true);
-            _spearThrow.Construct(playerView, _spearContainer);
+            _spearThrow.Construct(playerView);
         }
 
         public void Dispose()
         {
-            _sceneCamera.enabled = true;
+            PlayerView.LocalPlayerStarted -= HandleLocalPlayerStarted;
 
-            _networkManager.StopAllCoroutines();
+            _sceneCamera.enabled = true;
 
             if (NetworkServer.active)
                 _networkManager.StopHost();
@@ -87,8 +75,8 @@ namespace Gameplay
             Object.Destroy(_networkManager.gameObject);
 
             _playerMovement.Dispose();
-            
             _networkManager = null;
+            SpearContainer = null;
         }
     }
 }

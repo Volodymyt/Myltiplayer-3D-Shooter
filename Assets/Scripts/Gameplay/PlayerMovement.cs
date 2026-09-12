@@ -1,4 +1,5 @@
 using System;
+using Mirror;
 using Services;
 using UnityEngine;
 using Zenject;
@@ -18,8 +19,7 @@ namespace Gameplay
         private bool _isLocalPlayer;
         private bool _isMoving = false;
         private Vector3 _moveDirection;
-        private Rigidbody _playerRigidbody;
-        private Animator _playerAnimator;
+        private PlayerView _playerView;
 
         private readonly LayerMask _groundLayer = LayerMask.GetMask("Ground");
         private readonly float _landingLockDuration = 0.85f;
@@ -27,25 +27,19 @@ namespace Gameplay
         private float _jumpLockTimer = 0f;
         private bool _wasGroundedLastFrame = true;
         private bool _isGrounded;
-        private Collider _playerCollider;
 
         private float _xRotation;
         private Vector2 _currentLook;
         private Vector2 _lookVelocity;
-        private Transform _cameraTransform;
 
         public PlayerMovement(InputService inputService)
         {
             _inputService = inputService;
         }
 
-        public void Construct(PlayerView player, bool isLocalPlayer)
+        public void Construct(PlayerView playerView, bool isLocalPlayer)
         {
-            _playerRigidbody = player.playerRigidbody;
-            _playerCollider = player.playerCollider;
-            _playerAnimator = player.playerAnimator;
-
-            _cameraTransform = player.playerCamera.transform;
+            _playerView = playerView;
             _isLocalPlayer = isLocalPlayer;
 
             _inputService.OnKeyboardMoveStart += HandleKeyboardMoveStart;
@@ -56,7 +50,7 @@ namespace Gameplay
 
         public void Tick()
         {
-            if (!_isLocalPlayer || _playerRigidbody == null)
+            if (!_isLocalPlayer || _playerView.playerRigidbody == null)
                 return;
 
             _isGrounded = CheckGround(Constants.PlayerSettings.RigidbodyGroundCheckDistance);
@@ -65,19 +59,19 @@ namespace Gameplay
 
             if (_isMoving)
             {
-                Vector3 move = _playerRigidbody.transform.TransformDirection(_moveDirection)
+                Vector3 move = _playerView.playerRigidbody.transform.TransformDirection(_moveDirection)
                                * (Constants.PlayerSettings.MoveSpeed * Time.deltaTime);
-                _playerRigidbody.MovePosition(_playerRigidbody.position + move);
+                _playerView.playerRigidbody.MovePosition(_playerView.playerRigidbody.position + move);
 
                 PlayMoveAnimation(_moveDirection);
             }
-            else if (!_isMoving && _playerAnimator.GetFloat(MoveX) != 0 || _playerAnimator.GetFloat(MoveZ) != 0)
+            else if (!_isMoving && (_playerView.playerAnimator.GetFloat(MoveX) != 0 || _playerView.playerAnimator.GetFloat(MoveZ) != 0))
             {
                 PlayMoveAnimation(new Vector3(0, 0, 0));
             }
 
-            _playerAnimator.SetFloat(MoveY, _playerRigidbody.linearVelocity.y);
-            _playerAnimator.SetBool(IsGrounded, CheckGround(Constants.PlayerSettings.AnimatorGroundCheckDistance));
+            _playerView.playerAnimator.SetFloat(MoveY, _playerView.playerRigidbody.linearVelocity.y);
+            _playerView.playerAnimator.SetBool(IsGrounded, CheckGround(Constants.PlayerSettings.AnimatorGroundCheckDistance));
         }
 
         #region Jump
@@ -87,16 +81,16 @@ namespace Gameplay
             if (!_isLocalPlayer || !_isGrounded || !_canJump)
                 return;
 
-            _playerRigidbody.AddForce(
+            _playerView.playerRigidbody.AddForce(
                 Vector3.up * Constants.PlayerSettings.JumpForce,
                 ForceMode.Impulse);
-
-            _playerAnimator.SetTrigger(JumpTrigger);
+            
+            _playerView.networkAnimator.SetTrigger(JumpTrigger); 
         }
 
         private bool CheckGround(float distance)
         {
-            Vector3 origin = _playerRigidbody.position + Vector3.up * 0.05f;
+            Vector3 origin = _playerView.playerRigidbody.position + Vector3.up * 0.05f;
 
             Vector3 sphereCenter = origin + Vector3.down * distance;
 
@@ -132,14 +126,14 @@ namespace Gameplay
 
         private void PlayMoveAnimation(Vector3 moveDirection)
         {
-            float currentX = _playerAnimator.GetFloat(MoveX);
-            float currentY = _playerAnimator.GetFloat(MoveZ);
+            float currentX = _playerView.playerAnimator.GetFloat(MoveX);
+            float currentY = _playerView.playerAnimator.GetFloat(MoveZ);
 
             float smoothX = Mathf.Lerp(currentX, moveDirection.x, Time.deltaTime * 10f);
             float smoothY = Mathf.Lerp(currentY, moveDirection.z, Time.deltaTime * 10f);
 
-            _playerAnimator.SetFloat(MoveX, smoothX);
-            _playerAnimator.SetFloat(MoveZ, smoothY);
+            _playerView.playerAnimator.SetFloat(MoveX, smoothX);
+            _playerView.playerAnimator.SetFloat(MoveZ, smoothY);
         }
 
         private void HandleKeyboardMoveStart(KeyboardContext context)
@@ -169,9 +163,9 @@ namespace Gameplay
                 Constants.PlayerSettings.MinXRotation,
                 Constants.PlayerSettings.MaxXRotation);
 
-            _cameraTransform.localRotation = Quaternion.Euler(_xRotation, 0f, 0f);
+            _playerView.playerCamera.transform.localRotation = Quaternion.Euler(_xRotation, 0f, 0f);
 
-            _playerRigidbody.transform.Rotate(Vector3.up * _currentLook.x * Time.deltaTime);
+            _playerView.playerRigidbody.transform.Rotate(Vector3.up * _currentLook.x * Time.deltaTime);
         }
 
         public void Dispose()
@@ -186,9 +180,8 @@ namespace Gameplay
 
             _isMoving = false;
             _moveDirection = Vector3.zero;
-            _playerRigidbody = null;
-            _cameraTransform = null;
             _isLocalPlayer = false;
+            _playerView = null;
 
             _currentLook = Vector2.zero;
             _lookVelocity = Vector2.zero;
