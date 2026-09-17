@@ -145,7 +145,9 @@ namespace Gameplay
             Vector3 arcedDir = CalculateThrowDirection();
             Vector3 velocity = arcedDir * Constants.PlayerSettings.ThrowForce;
 
-            _currentSpearView.CmdThrow(velocity);
+            Vector3 origin = _currentSpearView.RootPosition;
+            double throwTime = _currentSpearView.PredictThrow(origin, velocity);
+            _currentSpearView.CmdThrow(origin, velocity, throwTime);
 
             _currentSpear = null;
             _currentSpearView = null;
