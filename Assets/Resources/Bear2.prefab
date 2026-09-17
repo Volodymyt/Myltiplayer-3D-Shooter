@@ -385,6 +385,75 @@ Transform:
   m_Children: []
   m_Father: {fileID: 7847625573064494618}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2152974903190337419
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1559583203533736770}
+  - component: {fileID: 435535556997147629}
+  - component: {fileID: 2508435688393318071}
+  m_Layer: 7
+  m_Name: GroundChecker
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1559583203533736770
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2152974903190337419}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3635970573547691248}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &435535556997147629
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2152974903190337419}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.4120618, y: 1.6248419, z: 0.3410548}
+  m_Center: {x: 0.007100731, y: -0.8009492, z: 0.022722274}
+--- !u!114 &2508435688393318071
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2152974903190337419}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f75648dd37349e58fd48c2bde4fb98e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!1 &2168087412934750624
 GameObject:
   m_ObjectHideFlags: 0
@@ -1263,9 +1332,9 @@ MonoBehaviour:
   playerCamera: {fileID: 3795520611269056132}
   playerAnimator: {fileID: 3705761442577404012}
   playerRigidbody: {fileID: 6568523663859210631}
-  playerCollider: {fileID: 2423549600987766563}
   networkAnimator: {fileID: 7311356214463413544}
   spearThrowPoint: {fileID: 6367880976711179229}
+  groundChecker: {fileID: 2508435688393318071}
 --- !u!114 &7216261611082939790
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1504,6 +1573,7 @@ Transform:
   - {fileID: 6706890390441139400}
   - {fileID: 8526087243203222297}
   - {fileID: 3550329649313373667}
+  - {fileID: 1559583203533736770}
   m_Father: {fileID: 4239421298122026291}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7943269227935260437

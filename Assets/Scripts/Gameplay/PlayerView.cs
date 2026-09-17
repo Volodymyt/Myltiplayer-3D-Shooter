@@ -14,6 +14,7 @@ namespace Gameplay
         public Rigidbody playerRigidbody;
         public NetworkAnimator networkAnimator;
         public Transform spearThrowPoint;
+        public GroundChecker groundChecker;
 
         private void Start()
         {

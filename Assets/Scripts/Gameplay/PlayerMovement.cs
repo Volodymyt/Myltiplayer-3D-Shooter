@@ -53,7 +53,7 @@ namespace Gameplay
             if (!_isLocalPlayer || _playerView.playerRigidbody == null)
                 return;
 
-            _isGrounded = CheckGround(Constants.PlayerSettings.RigidbodyGroundCheckDistance);
+            _isGrounded = _playerView.groundChecker.IsGrounded;
 
             HandleLandingLock();
 
@@ -71,7 +71,7 @@ namespace Gameplay
             }
 
             _playerView.playerAnimator.SetFloat(MoveY, _playerView.playerRigidbody.linearVelocity.y);
-            _playerView.playerAnimator.SetBool(IsGrounded, CheckGround(Constants.PlayerSettings.AnimatorGroundCheckDistance));
+            _playerView.playerAnimator.SetBool(IsGrounded, _isGrounded);
         }
 
         #region Jump
