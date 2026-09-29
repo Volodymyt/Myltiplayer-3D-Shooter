@@ -17,7 +17,10 @@ namespace StateMachine.Global.States
         private readonly UIGameMediator _uiGameMediator;
         private readonly GameplayMediator _gameplayMediator;
 
+        private GameplayPayload _payload;
+        
         private bool _isHost;
+        private string _joinCode;
         
         public GameplayerState(
             StateMachineBase stateMachine, 
@@ -34,6 +37,7 @@ namespace StateMachine.Global.States
         public override void Enter(GameplayPayload payload)
         {
             _isHost = payload.IsHost;
+            _joinCode = payload.JoinCode;
 
             Subscribe();
             SceneManager.LoadScene(SceneName);
@@ -47,7 +51,7 @@ namespace StateMachine.Global.States
                 _gameplayMediator.Construct();
                 _inputService.Construct();
 
-                _gameplayMediator.StartNetwork(_isHost);
+                _ = _gameplayMediator.StartNetworkAsync(_isHost, _joinCode);
 
                 SceneManager.sceneLoaded -= OnSceneLoaded;
             }
@@ -57,12 +61,15 @@ namespace StateMachine.Global.States
         {
             Application.quitting += Exit;
             SceneManager.sceneLoaded += OnSceneLoaded;
+            //_gameplayMediator.RoomCodeReady += code => Debug.Log($"ROOM CODE: {code}");
         }
 
         private void Unsubscribe()
         {
             Application.quitting -= Exit;
             SceneManager.sceneLoaded -= OnSceneLoaded;
+            //_gameplayMediator.RoomCodeReady -= code => Debug.Log($"ROOM CODE: {code}");
+
         }
 
         public override void Exit()

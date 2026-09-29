@@ -9,7 +9,7 @@ namespace UI.MainMenu
         private Lobby _lobby;
 
         public event Action HostSelected;
-        public event Action ClientSelected;
+        public event Action<string> ClientSelected;
 
         public MainMenuMediator(GenericFactory genericFactory)
         {
@@ -25,7 +25,7 @@ namespace UI.MainMenu
         }
 
         private void OnHost() => HostSelected?.Invoke();
-        private void OnClient() => ClientSelected?.Invoke();
+        private void OnClient(string code) => ClientSelected?.Invoke(code);
 
         public void Dispose()
         {

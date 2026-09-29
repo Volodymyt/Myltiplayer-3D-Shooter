@@ -1,4 +1,5 @@
 using System;
+using TMPro;
 using UnityEngine;
 
 namespace UI
@@ -6,9 +7,10 @@ namespace UI
     public class Lobby : MonoBehaviour
     {
         public event Action OnHostAddRequest;
-        
-        public event Action OnClientAddRequest;
-        
+        public event Action<string> OnClientAddRequest;
+
+        [SerializeField] private TMP_InputField joinCodeInput; 
+
         public void OnHostButton()
         {
             OnHostAddRequest?.Invoke();
@@ -16,7 +18,8 @@ namespace UI
 
         public void OnClientButton()
         {
-            OnClientAddRequest?.Invoke();
+            var code = joinCodeInput != null ? joinCodeInput.text : string.Empty;
+            OnClientAddRequest?.Invoke(code);
         }
     }
 }

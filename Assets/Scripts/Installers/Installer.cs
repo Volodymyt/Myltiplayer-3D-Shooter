@@ -1,5 +1,6 @@
 using Gameplay;
 using Services;
+using Services.Networking;
 using StateMachine.Global;
 using StateMachine.Global.States;
 using UI;
@@ -44,6 +45,8 @@ namespace Installers
 
         private void BindServices()
         {
+            Container.Bind<IEdgegapRelayService>().To<EdgegapRelayService>().AsSingle();
+            
             Container.Bind<PlayerInputActions>().AsSingle().NonLazy();
             Container.Bind<InputService>().AsSingle();
 

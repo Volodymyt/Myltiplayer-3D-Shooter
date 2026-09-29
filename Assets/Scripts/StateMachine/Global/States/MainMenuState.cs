@@ -41,9 +41,9 @@ namespace StateMachine.Global.States
             _stateMachine.ChangeState<GameplayerState, GameplayPayload>(new GameplayPayload(true));
         }
 
-        private void OnClientSelected()
+        private void OnClientSelected(string joinCode)
         {
-            _stateMachine.ChangeState<GameplayerState, GameplayPayload>(new GameplayPayload(false));
+            _stateMachine.ChangeState<GameplayerState, GameplayPayload>(new GameplayPayload(false, joinCode));
         }
 
         private void Subscribe()
