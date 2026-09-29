@@ -1,6 +1,7 @@
 using System;
 using Mirror;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Gameplay
 {
@@ -14,7 +15,8 @@ namespace Gameplay
         public Rigidbody playerRigidbody;
         public NetworkAnimator networkAnimator;
         public Transform spearThrowPoint;
-        public GroundChecker groundChecker;
+        public GroundChecker feetGroundChecker;
+        public GroundChecker landingGroundChecker;
 
         private void Start()
         {

@@ -22,10 +22,11 @@ namespace Gameplay
         private PlayerView _playerView;
 
         private readonly LayerMask _groundLayer = LayerMask.GetMask("Ground");
-        private readonly float _landingLockDuration = 0.85f;
+        private readonly float _landingLockDuration = 0.55f;
         private bool _canJump = true;
         private float _jumpLockTimer = 0f;
         private bool _wasGroundedLastFrame = true;
+        private bool _isNearGround;
         private bool _isGrounded;
 
         private float _xRotation;
@@ -53,7 +54,8 @@ namespace Gameplay
             if (!_isLocalPlayer || _playerView.playerRigidbody == null)
                 return;
 
-            _isGrounded = _playerView.groundChecker.IsGrounded;
+            _isNearGround = _playerView.feetGroundChecker.IsGrounded;
+            _isGrounded = _playerView.landingGroundChecker.IsGrounded;
 
             HandleLandingLock();
 
@@ -71,7 +73,7 @@ namespace Gameplay
             }
 
             _playerView.playerAnimator.SetFloat(MoveY, _playerView.playerRigidbody.linearVelocity.y);
-            _playerView.playerAnimator.SetBool(IsGrounded, _isGrounded);
+            _playerView.playerAnimator.SetBool(IsGrounded, _isNearGround);
         }
 
         #region Jump
@@ -87,25 +89,10 @@ namespace Gameplay
             
             _playerView.networkAnimator.SetTrigger(JumpTrigger); 
         }
-
-        private bool CheckGround(float distance)
-        {
-            Vector3 origin = _playerView.playerRigidbody.position + Vector3.up * 0.05f;
-
-            Vector3 sphereCenter = origin + Vector3.down * distance;
-
-            bool grounded = Physics.CheckSphere(
-                sphereCenter,
-                Constants.PlayerSettings.GroundCheckDistance,
-                _groundLayer
-            );
-
-            return grounded;
-        }
-
+        
         private void HandleLandingLock()
         {
-            bool landedThisFrame = _isGrounded && !_wasGroundedLastFrame;
+            bool landedThisFrame = _isNearGround && !_wasGroundedLastFrame;
 
             if (landedThisFrame)
             {
@@ -119,7 +106,7 @@ namespace Gameplay
                 _canJump = _jumpLockTimer <= 0f;
             }
 
-            _wasGroundedLastFrame = _isGrounded;
+            _wasGroundedLastFrame = _isNearGround;
         }
 
         #endregion
