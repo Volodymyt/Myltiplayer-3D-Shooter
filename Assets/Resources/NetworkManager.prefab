@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3010507903789823000}
   - component: {fileID: 5327817876667501642}
-  - component: {fileID: 7794776549721438032}
+  - component: {fileID: 3111864160900889933}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -53,7 +53,7 @@ MonoBehaviour:
   offlineScene: Assets/Scenes/Main Menu Scene.unity
   onlineScene: Assets/Scenes/Game Scene.unity
   offlineSceneLoadDelay: 0
-  transport: {fileID: 7794776549721438032}
+  transport: {fileID: 3111864160900889933}
   networkAddress: localhost
   maxConnections: 100
   disconnectInactiveConnections: 0
@@ -80,7 +80,7 @@ MonoBehaviour:
   evaluationMethod: 0
   evaluationInterval: 3
   timeInterpolationGui: 0
---- !u!114 &7794776549721438032
+--- !u!114 &3111864160900889933
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -89,7 +89,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 7807673935556616847}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6b0fecffa3f624585964b0d0eb21b18e, type: 3}
+  m_Script: {fileID: 11500000, guid: c2d1e0e17f753449798fa27474d6b86b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   port: 7777
@@ -104,8 +104,14 @@ MonoBehaviour:
   SendWindowSize: 4096
   MaxRetransmit: 40
   MaximizeSocketBuffers: 1
-  ReliableMaxMessageSize: 297433
-  UnreliableMaxMessageSize: 1194
+  ReliableMaxMessageSize: 294131
+  UnreliableMaxMessageSize: 1181
   debugLog: 0
   statisticsGUI: 0
   statisticsLog: 0
+  relayAddress: 127.0.0.1
+  relayGameServerPort: 8888
+  relayGameClientPort: 9999
+  relayGUI: 0
+  userId: 11111111
+  sessionId: 22222222

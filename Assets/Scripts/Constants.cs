@@ -6,6 +6,7 @@ public class Constants
     
     // UI
     public const string LobbyPath = "Lobby";
+    public const string GameHudPath = "GameHud";
 
     public class PlayerSettings
     {
