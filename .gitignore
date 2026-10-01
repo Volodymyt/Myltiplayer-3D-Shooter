@@ -76,3 +76,4 @@ crashlytics-build.properties
 .idea/.idea.Myltiplayer-3D-Shooter/.idea/indexLayout.xml
 .idea/.idea.Myltiplayer-3D-Shooter/.idea/vcs.xml
 .idea/.idea.Myltiplayer-3D-Shooter/.idea/workspace.xml
+Assets/Scripts/Services/Networking/EdgegapSecrets.cs

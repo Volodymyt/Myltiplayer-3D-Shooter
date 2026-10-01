@@ -9,9 +9,6 @@ namespace Services.Networking
 {
     public class EdgegapRelayService : IEdgegapRelayService, IDisposable
     {
-        // TODO: перед білдом прибрати токен звідси (див. чекліст, п.5) —
-        // або через проксі-сервер, або через захищене конфіг-сховище.
-        private const string ApiToken = "fd3f1342-b5c4-498b-af38-7bb03d758c39";
         private const string BaseUrl = "https://api.edgegap.com/v1/relays/sessions";
 
         private readonly HttpClient _http;
@@ -20,7 +17,7 @@ namespace Services.Networking
         {
             _http = new HttpClient();
             _http.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("token", ApiToken);
+                new AuthenticationHeaderValue("token", EdgegapSecrets.ApiToken);
         }
 
         public async Task<string> GetPublicIpAsync()
@@ -46,7 +43,7 @@ namespace Services.Networking
             return JsonUtility.FromJson<RelaySession>(responseJson);
         }
 
-        public async Task AuthorizeUserAsync(string sessionId, string userIp)
+        public async Task<SessionUser> AuthorizeUserAsync(string sessionId, string userIp)
         {
             var body = new AuthorizeUserRequest { session_id = sessionId, user_ip = userIp };
             var json = JsonUtility.ToJson(body);
@@ -57,6 +54,9 @@ namespace Services.Networking
 
             if (!response.IsSuccessStatusCode)
                 throw new Exception($"AuthorizeUser failed: {response.StatusCode} {responseJson}");
+
+            var parsed = JsonUtility.FromJson<AuthorizeUserResponse>(responseJson);
+            return parsed.session_user;
         }
 
         public async Task<RelaySession> GetSessionAsync(string sessionId)
@@ -91,6 +91,19 @@ namespace Services.Networking
         public async Task DeleteSessionAsync(string sessionId)
         {
             await _http.DeleteAsync($"{BaseUrl}/{sessionId}");
+        }
+
+        public async Task RevokeUserAsync(string sessionId, uint authorizationToken)
+        {
+            var body = new RevokeUserRequest { session_id = sessionId, authorization_token = authorizationToken };
+            var json = JsonUtility.ToJson(body);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _http.PostAsync($"{BaseUrl}:revoke-user", content);
+            var responseJson = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception($"RevokeUser failed: {response.StatusCode} {responseJson}");
         }
 
         public void Dispose() => _http?.Dispose();

@@ -17,11 +17,15 @@ namespace Gameplay
         private readonly IEdgegapRelayService _relayService;
 
         public static Transform SpearContainer { get; private set; }
-        public event Action<string> RoomCodeReady; // код кімнати для показу хосту в UI
+        public event Action<string> RoomCodeReady;
 
         private NetworkManager _networkManager;
         private Camera _sceneCamera;
         public Transform _spearContainer;
+        private string _sessionId;
+        private uint _myAuthorizationToken;
+        private bool _isHost;
+        private bool _sessionJoined;
 
         public GameplayMediator(
             GenericFactory genericFactory,
@@ -60,11 +64,14 @@ namespace Gameplay
             {
                 var myIp = await _relayService.GetPublicIpAsync();
                 RelaySession session;
+                uint myUserToken;
 
                 if (isHost)
                 {
                     session = await _relayService.CreateSessionAsync(myIp);
                     session = await _relayService.WaitUntilReadyAsync(session.session_id);
+
+                    myUserToken = FindMyAuthorizationToken(session, myIp);
                 }
                 else
                 {
@@ -74,11 +81,11 @@ namespace Gameplay
                         return;
                     }
 
-                    await _relayService.AuthorizeUserAsync(joinCode, myIp);
+                    var myUser = await _relayService.AuthorizeUserAsync(joinCode, myIp);
+                    myUserToken = myUser.authorization_token;
+                    
                     session = await _relayService.WaitUntilReadyAsync(joinCode);
                 }
-
-                var myUserToken = FindMyAuthorizationToken(session, myIp);
 
                 transport.relayAddress = session.relay.ip;
                 transport.sessionId = session.authorization_token;
@@ -88,6 +95,15 @@ namespace Gameplay
                     transport.relayGameServerPort = (ushort)session.relay.ports.server.port;
                 else
                     transport.relayGameClientPort = (ushort)session.relay.ports.client.port;
+
+                Debug.Log($"[Relay] Transport configured -> relayAddress={transport.relayAddress} " +
+                          $"sessionId={transport.sessionId} userId={transport.userId} " +
+                          $"serverPort={transport.relayGameServerPort} clientPort={transport.relayGameClientPort}");
+
+                _sessionId = session.session_id;
+                _myAuthorizationToken = myUserToken;
+                _isHost = isHost;
+                _sessionJoined = true;
 
                 if (isHost)
                 {
@@ -115,6 +131,32 @@ namespace Gameplay
 
             Debug.LogWarning("Own IP not found in session_users, using first entry as fallback.");
             return session.session_users.Length > 0 ? session.session_users[0].authorization_token : 0;
+        }
+
+        public async Task CleanupBeforeQuitAsync()
+        {
+            if (!_sessionJoined || string.IsNullOrEmpty(_sessionId))
+                return;
+
+            try
+            {
+                if (_isHost)
+                {
+                    await _relayService.DeleteSessionAsync(_sessionId);
+                }
+                else
+                {
+                    await _relayService.RevokeUserAsync(_sessionId, _myAuthorizationToken);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"Failed to clean up relay session on quit: {e}");
+            }
+            finally
+            {
+                _sessionJoined = false;
+            }
         }
 
         private void HandleLocalPlayerStarted(PlayerView playerView)

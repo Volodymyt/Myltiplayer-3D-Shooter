@@ -64,6 +64,20 @@ namespace Services.Networking
     }
 
     [Serializable]
+    internal class RevokeUserRequest
+    {
+        public string session_id;
+        public uint authorization_token;
+    }
+
+    [Serializable]
+    internal class AuthorizeUserResponse
+    {
+        public string session_id;
+        public SessionUser session_user;
+    }
+
+    [Serializable]
     internal class IpifyResponse
     {
         public string ip;

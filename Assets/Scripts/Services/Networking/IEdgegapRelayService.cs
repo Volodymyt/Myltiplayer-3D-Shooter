@@ -6,9 +6,10 @@ namespace Services.Networking
     {
         Task<string> GetPublicIpAsync();
         Task<RelaySession> CreateSessionAsync(string hostIp);
-        Task AuthorizeUserAsync(string sessionId, string userIp);
+        Task<SessionUser> AuthorizeUserAsync(string sessionId, string userIp);
         Task<RelaySession> GetSessionAsync(string sessionId);
         Task<RelaySession> WaitUntilReadyAsync(string sessionId, int timeoutMs = 15000);
         Task DeleteSessionAsync(string sessionId);
+        Task RevokeUserAsync(string sessionId, uint authorizationToken);
     }
 }

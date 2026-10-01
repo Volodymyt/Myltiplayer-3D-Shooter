@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Gameplay;
 using Services;
 using UnityEngine;
@@ -21,6 +22,7 @@ namespace StateMachine.Global.States
         
         private bool _isHost;
         private string _joinCode;
+        private bool _quitConfirmed;
         
         public GameplayerState(
             StateMachineBase stateMachine, 
@@ -59,17 +61,34 @@ namespace StateMachine.Global.States
 
         private void Subscribe()
         {
-            Application.quitting += Exit;
+            Application.wantsToQuit += HandleWantsToQuit;
             SceneManager.sceneLoaded += OnSceneLoaded;
-            //_gameplayMediator.RoomCodeReady += code => Debug.Log($"ROOM CODE: {code}");
         }
 
         private void Unsubscribe()
         {
-            Application.quitting -= Exit;
+            Application.wantsToQuit -= HandleWantsToQuit;
             SceneManager.sceneLoaded -= OnSceneLoaded;
-            //_gameplayMediator.RoomCodeReady -= code => Debug.Log($"ROOM CODE: {code}");
+        }
 
+        private bool HandleWantsToQuit()
+        {
+            if (_quitConfirmed)
+                return true;
+
+            _ = QuitAfterCleanupAsync();
+            return false;
+        }
+
+        private async Task QuitAfterCleanupAsync()
+        {
+            var cleanupTask = _gameplayMediator.CleanupBeforeQuitAsync();
+            var timeoutTask = Task.Delay(3000);
+            await Task.WhenAny(cleanupTask, timeoutTask);
+
+            Exit();
+            _quitConfirmed = true;
+            Application.Quit();
         }
 
         public override void Exit()
