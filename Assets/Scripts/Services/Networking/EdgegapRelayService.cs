@@ -13,6 +13,8 @@ namespace Services.Networking
 
         private readonly HttpClient _http;
 
+        private readonly HttpClient _publicHttp = new HttpClient();
+
         public EdgegapRelayService()
         {
             _http = new HttpClient();
@@ -22,10 +24,46 @@ namespace Services.Networking
 
         public async Task<string> GetPublicIpAsync()
         {
-            var response = await _http.GetAsync("https://api.ipify.org?format=json");
-            var json = await response.Content.ReadAsStringAsync();
-            var parsed = JsonUtility.FromJson<IpifyResponse>(json);
-            return parsed.ip;
+            var httpsTask = GetHttpsIpSafeAsync();
+            var googleTask = StunClient.GetPublicIpAsync("stun.l.google.com", 19302);
+            var cloudflareTask = StunClient.GetPublicIpAsync("stun.cloudflare.com", 3478);
+            await Task.WhenAll(httpsTask, googleTask, cloudflareTask);
+
+            var httpsIp = httpsTask.Result;
+            var udpGoogle = googleTask.Result;
+            var udpCloudflare = cloudflareTask.Result;
+
+            Debug.Log($"[Relay] Public IP: https={httpsIp ?? "?"} " +
+                      $"udp(google)={udpGoogle ?? "?"} udp(cloudflare)={udpCloudflare ?? "?"}");
+
+            if (udpGoogle != null && udpCloudflare != null && udpGoogle != udpCloudflare)
+                Debug.LogWarning("[Relay] UDP IP differs between STUN servers: this network changes " +
+                                 "the public IP per connection, so the relay may see yet another IP.");
+
+            var udpIp = udpGoogle ?? udpCloudflare;
+            if (udpIp != null && httpsIp != null && udpIp != httpsIp)
+                Debug.LogWarning($"[Relay] HTTPS IP ({httpsIp}) != UDP IP ({udpIp}). Using UDP IP for the relay.");
+
+            var ip = udpIp ?? httpsIp;
+            if (ip == null)
+                throw new Exception("Could not determine public IP (both STUN and ipify failed).");
+
+            return ip;
+        }
+
+        private async Task<string> GetHttpsIpSafeAsync()
+        {
+            try
+            {
+                var response = await _publicHttp.GetAsync("https://api.ipify.org?format=json");
+                var json = await response.Content.ReadAsStringAsync();
+                return JsonUtility.FromJson<IpifyResponse>(json)?.ip;
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[Relay] ipify failed: {e.Message}");
+                return null;
+            }
         }
 
         public async Task<RelaySession> CreateSessionAsync(string hostIp)
@@ -61,13 +99,19 @@ namespace Services.Networking
 
         public async Task<RelaySession> GetSessionAsync(string sessionId)
         {
+            var json = await GetSessionJsonAsync(sessionId);
+            return JsonUtility.FromJson<RelaySession>(json);
+        }
+
+        private async Task<string> GetSessionJsonAsync(string sessionId)
+        {
             var response = await _http.GetAsync($"{BaseUrl}/{sessionId}");
             var json = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
                 throw new Exception($"GetSession failed: {response.StatusCode} {json}");
 
-            return JsonUtility.FromJson<RelaySession>(json);
+            return json;
         }
 
         public async Task<RelaySession> WaitUntilReadyAsync(string sessionId, int timeoutMs = 15000)
@@ -77,9 +121,13 @@ namespace Services.Networking
 
             while (elapsed < timeoutMs)
             {
-                var session = await GetSessionAsync(sessionId);
+                var json = await GetSessionJsonAsync(sessionId);
+                var session = JsonUtility.FromJson<RelaySession>(json);
                 if (session.ready && session.linked)
+                {
+                    Debug.Log($"[Relay] Session JSON: {json}");
                     return session;
+                }
 
                 await Task.Delay(pollIntervalMs);
                 elapsed += pollIntervalMs;
@@ -106,6 +154,10 @@ namespace Services.Networking
                 throw new Exception($"RevokeUser failed: {response.StatusCode} {responseJson}");
         }
 
-        public void Dispose() => _http?.Dispose();
+        public void Dispose()
+        {
+            _http?.Dispose();
+            _publicHttp?.Dispose();
+        }
     }
 }

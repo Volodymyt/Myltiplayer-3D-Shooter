@@ -1,20 +1,23 @@
-using System;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI; // або TMPro, якщо у вас TextMeshPro
 
 namespace UI
 {
     public class GameHud : MonoBehaviour
     {
         [SerializeField] private GameObject roomCodePanel;
-        [SerializeField] private TMP_Text roomCodeText; // замініть на TMP_Text, якщо TextMeshPro
+        [SerializeField] private TMP_Text roomCodeText;
 
         private void Update()
         {
             if (Input.GetKeyDown(KeyCode.P))
             {
                 OnCopyCodeButton();
+            }
+            
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                Application.Quit();
             }
         }
 

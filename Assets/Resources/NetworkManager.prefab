@@ -50,8 +50,8 @@ MonoBehaviour:
   headlessStartMode: 0
   editorAutoStart: 0
   sendRate: 60
-  offlineScene: Assets/Scenes/Main Menu Scene.unity
-  onlineScene: Assets/Scenes/Game Scene.unity
+  offlineScene: 
+  onlineScene: 
   offlineSceneLoadDelay: 0
   transport: {fileID: 3111864160900889933}
   networkAddress: localhost
@@ -64,7 +64,6 @@ MonoBehaviour:
   playerSpawnMethod: 0
   spawnPrefabs:
   - {fileID: 2651736676821518133, guid: dbc2363009c37db419d7ae35e75fb5d9, type: 3}
-  - {fileID: 521940548721186791, guid: 591debf47552cf04699d2d395f4fa040, type: 3}
   exceptionsDisconnect: 1
   snapshotSettings:
     bufferTimeMultiplier: 2

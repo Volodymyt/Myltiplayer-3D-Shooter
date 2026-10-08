@@ -21,7 +21,7 @@ namespace Gameplay
 
         private NetworkManager _networkManager;
         private Camera _sceneCamera;
-        public Transform _spearContainer;
+        private Transform _spearContainer;
         private string _sessionId;
         private uint _myAuthorizationToken;
         private bool _isHost;
