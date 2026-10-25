@@ -66,10 +66,13 @@ namespace Services.Networking
             }
         }
 
-        public async Task<RelaySession> CreateSessionAsync(string hostIp)
+        public async Task<RelaySession> CreateSessionAsync(string hostIp, RelayFilter[] filters = null)
         {
-            var body = new CreateSessionRequest { users = new[] { new IpUser { ip = hostIp } } };
-            var json = JsonUtility.ToJson(body);
+            var users = new[] { new IpUser { ip = hostIp } };
+
+            var json = filters != null && filters.Length > 0
+                ? JsonUtility.ToJson(new CreateSessionWithFiltersRequest { users = users, filters = filters })
+                : JsonUtility.ToJson(new CreateSessionRequest { users = users });
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             var response = await _http.PostAsync(BaseUrl, content);

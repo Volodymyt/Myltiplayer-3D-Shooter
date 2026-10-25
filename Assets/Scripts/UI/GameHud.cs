@@ -27,13 +27,13 @@ namespace UI
                 roomCodePanel.SetActive(true);
 
             if (roomCodeText != null)
-                roomCodeText.text = $"Код кімнати: {code}";
+                roomCodeText.text = code;
         }
 
         public void OnCopyCodeButton()
         {
             if (roomCodeText != null)
-                GUIUtility.systemCopyBuffer = roomCodeText.text.Replace("Код кімнати: ", "");
+                GUIUtility.systemCopyBuffer = roomCodeText.text;
         }
 
         public void Hide()

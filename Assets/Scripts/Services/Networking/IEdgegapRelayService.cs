@@ -5,7 +5,7 @@ namespace Services.Networking
     public interface IEdgegapRelayService
     {
         Task<string> GetPublicIpAsync();
-        Task<RelaySession> CreateSessionAsync(string hostIp);
+        Task<RelaySession> CreateSessionAsync(string hostIp, RelayFilter[] filters = null);
         Task<SessionUser> AuthorizeUserAsync(string sessionId, string userIp);
         Task<RelaySession> GetSessionAsync(string sessionId);
         Task<RelaySession> WaitUntilReadyAsync(string sessionId, int timeoutMs = 15000);

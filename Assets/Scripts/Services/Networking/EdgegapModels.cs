@@ -57,6 +57,23 @@ namespace Services.Networking
     }
 
     [Serializable]
+    public class RelayFilter
+    {
+        public string field;
+        public string[] values;
+        public string filter_type;
+
+        public override string ToString() => $"{field} {filter_type} [{string.Join(", ", values ?? new string[0])}]";
+    }
+
+    [Serializable]
+    internal class CreateSessionWithFiltersRequest
+    {
+        public IpUser[] users;
+        public RelayFilter[] filters;
+    }
+
+    [Serializable]
     internal class AuthorizeUserRequest
     {
         public string session_id;

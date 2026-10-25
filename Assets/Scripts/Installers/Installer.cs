@@ -18,6 +18,7 @@ namespace Installers
             BindGameplay();
             BindUI();
             BindServices();
+            BindNetwork();
         }
 
         private void BindGlobalStateMachine()
@@ -43,9 +44,17 @@ namespace Installers
             Container.Bind<MainMenuMediator>().AsSingle();
         }
 
+        private void BindNetwork()
+        {
+            Container.Bind<RelayPicker>().AsSingle();
+            Container.Bind<RelayDiagnostics>().AsSingle();
+            Container.Bind<NetworkConnectionService>().AsSingle();
+        }
+
         private void BindServices()
         {
             Container.Bind<IEdgegapRelayService>().To<EdgegapRelayService>().AsSingle();
+            Container.Bind<MenuMessageService>().AsSingle();
             
             Container.Bind<PlayerInputActions>().AsSingle().NonLazy();
             Container.Bind<InputService>().AsSingle();

@@ -17,23 +17,26 @@ namespace StateMachine.Global.States
         private readonly InputService _inputService;
         private readonly UIGameMediator _uiGameMediator;
         private readonly GameplayMediator _gameplayMediator;
+        private readonly MenuMessageService _menuMessages;
 
         private GameplayPayload _payload;
-        
+
         private bool _isHost;
         private string _joinCode;
         private bool _quitConfirmed;
-        
+
         public GameplayerState(
-            StateMachineBase stateMachine, 
+            StateMachineBase stateMachine,
             InputService inputService,
             UIGameMediator uiGameMediator,
-            GameplayMediator gameplayMediator) : base(stateMachine)
+            GameplayMediator gameplayMediator,
+            MenuMessageService menuMessages) : base(stateMachine)
         {
             _stateMachine = stateMachine;
             _inputService = inputService;
             _uiGameMediator = uiGameMediator;
             _gameplayMediator = gameplayMediator;
+            _menuMessages = menuMessages;
         }
 
         public override void Enter(GameplayPayload payload)
@@ -63,12 +66,23 @@ namespace StateMachine.Global.States
         {
             Application.wantsToQuit += HandleWantsToQuit;
             SceneManager.sceneLoaded += OnSceneLoaded;
+            _gameplayMediator.ConnectionLost += OnConnectionLost;
         }
 
         private void Unsubscribe()
         {
             Application.wantsToQuit -= HandleWantsToQuit;
             SceneManager.sceneLoaded -= OnSceneLoaded;
+            _gameplayMediator.ConnectionLost -= OnConnectionLost;
+        }
+
+        private void OnConnectionLost(string message)
+        {
+            if (_quitConfirmed)
+                return;
+
+            _menuMessages.Set(message);
+            _stateMachine.ChangeState<MainMenuState>();
         }
 
         private bool HandleWantsToQuit()

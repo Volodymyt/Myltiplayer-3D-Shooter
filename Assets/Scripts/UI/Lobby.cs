@@ -1,11 +1,14 @@
 using System;
 using TMPro;
+using UI.MainMenu;
 using UnityEngine;
 
 namespace UI
 {
     public class Lobby : MonoBehaviour
     {
+        public ErrorMessageText errorMessage;
+        
         public event Action OnHostAddRequest;
         public event Action<string> OnClientAddRequest;
 
