@@ -11,6 +11,7 @@
   <Project Path="Zenject-UnitTests-Editor.csproj" />
   <Project Path="Zenject-Editor.csproj" />
   <Project Path="Zenject-IntegrationTests.csproj" />
+  <Project Path="BzKovSoft.RagdollHelper.Editor.csproj" />
   <Project Path="Telepathy.csproj" />
   <Project Path="kcp2k.csproj" />
   <Project Path="Mirror.Transports.csproj" />

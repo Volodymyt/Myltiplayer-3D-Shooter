@@ -1,5 +1,4 @@
 using System;
-using Mirror;
 using Services;
 using UnityEngine;
 using Zenject;
@@ -17,16 +16,15 @@ namespace Gameplay
         private readonly InputService _inputService;
 
         private bool _isLocalPlayer;
-        private bool _isMoving = false;
+        private bool _isMoving;
         private Vector3 _moveDirection;
         private PlayerView _playerView;
+        private ActiveRagdoll _ragdoll;
 
-        private readonly LayerMask _groundLayer = LayerMask.GetMask("Ground");
         private readonly float _landingLockDuration = 0.55f;
         private bool _canJump = true;
-        private float _jumpLockTimer = 0f;
+        private float _jumpLockTimer;
         private bool _wasGroundedLastFrame = true;
-        private bool _isNearGround;
         private bool _isGrounded;
 
         private float _xRotation;
@@ -41,7 +39,11 @@ namespace Gameplay
         public void Construct(PlayerView playerView, bool isLocalPlayer)
         {
             _playerView = playerView;
+            _ragdoll = playerView.activeRagdoll;
             _isLocalPlayer = isLocalPlayer;
+
+            if (_ragdoll == null)
+                Debug.LogError("PlayerMovement: in PlayerView Active Ragdoll not found", playerView);
 
             _inputService.OnKeyboardMoveStart += HandleKeyboardMoveStart;
             _inputService.OnKeyboardMoveStop += HandleKeyboardMoveStop;
@@ -49,50 +51,45 @@ namespace Gameplay
             _inputService.OnMouseLook += HandleMouseLook;
         }
 
+        private bool CanControl => _isLocalPlayer && _playerView != null && _ragdoll != null;
+
         public void Tick()
         {
-            if (!_isLocalPlayer || _playerView.playerRigidbody == null)
+            if (!CanControl)
                 return;
 
-            _isNearGround = _playerView.feetGroundChecker.IsGrounded;
-            _isGrounded = _playerView.landingGroundChecker.IsGrounded;
+            if (_ragdoll.IsDead)
+            {
+                _ragdoll.SetMoveInput(Vector3.zero);
+                return;
+            }
 
+            _isGrounded = _ragdoll.IsGrounded;
             HandleLandingLock();
 
-            if (_isMoving)
-            {
-                Vector3 move = _playerView.playerRigidbody.transform.TransformDirection(_moveDirection)
-                               * (Constants.PlayerSettings.MoveSpeed * Time.deltaTime);
-                _playerView.playerRigidbody.MovePosition(_playerView.playerRigidbody.position + move);
+            Vector3 worldMove = Quaternion.Euler(0f, _ragdoll.Yaw, 0f) * _moveDirection;
+            _ragdoll.SetMoveInput(_isMoving ? worldMove * Constants.PlayerSettings.MoveSpeed : Vector3.zero);
 
-                PlayMoveAnimation(_moveDirection);
-            }
-            else if (!_isMoving && (_playerView.playerAnimator.GetFloat(MoveX) != 0 || _playerView.playerAnimator.GetFloat(MoveZ) != 0))
-            {
-                PlayMoveAnimation(new Vector3(0, 0, 0));
-            }
+            PlayMoveAnimation(_isMoving ? _moveDirection : Vector3.zero);
 
-            _playerView.playerAnimator.SetFloat(MoveY, _playerView.playerRigidbody.linearVelocity.y);
-            _playerView.playerAnimator.SetBool(IsGrounded, _isNearGround);
+            _playerView.playerAnimator.SetFloat(MoveY, _ragdoll.Velocity.y);
+            _playerView.playerAnimator.SetBool(IsGrounded, _isGrounded);
         }
 
         #region Jump
 
         private void HandleKeyboardJump()
         {
-            if (!_isLocalPlayer || !_isGrounded || !_canJump)
+            if (!CanControl || _ragdoll.IsDead || !_isGrounded || !_canJump)
                 return;
 
-            _playerView.playerRigidbody.AddForce(
-                Vector3.up * Constants.PlayerSettings.JumpForce,
-                ForceMode.Impulse);
-            
-            _playerView.networkAnimator.SetTrigger(JumpTrigger); 
+            if (_ragdoll.Jump())
+                _playerView.networkAnimator.SetTrigger(JumpTrigger);
         }
-        
+
         private void HandleLandingLock()
         {
-            bool landedThisFrame = _isNearGround && !_wasGroundedLastFrame;
+            bool landedThisFrame = _isGrounded && !_wasGroundedLastFrame;
 
             if (landedThisFrame)
             {
@@ -106,7 +103,7 @@ namespace Gameplay
                 _canJump = _jumpLockTimer <= 0f;
             }
 
-            _wasGroundedLastFrame = _isNearGround;
+            _wasGroundedLastFrame = _isGrounded;
         }
 
         #endregion
@@ -137,7 +134,7 @@ namespace Gameplay
 
         private void HandleMouseLook(MouseContext context)
         {
-            if (!_isLocalPlayer)
+            if (!CanControl)
                 return;
 
             Vector2 targetLook = context.GetLookDelta() * Constants.PlayerSettings.MouseSensitivity;
@@ -152,7 +149,7 @@ namespace Gameplay
 
             _playerView.playerCamera.transform.localRotation = Quaternion.Euler(_xRotation, 0f, 0f);
 
-            _playerView.playerRigidbody.transform.Rotate(Vector3.up * _currentLook.x * Time.deltaTime);
+            _ragdoll.Yaw += _currentLook.x * Time.deltaTime;
         }
 
         public void Dispose()
@@ -169,6 +166,7 @@ namespace Gameplay
             _moveDirection = Vector3.zero;
             _isLocalPlayer = false;
             _playerView = null;
+            _ragdoll = null;
 
             _currentLook = Vector2.zero;
             _lookVelocity = Vector2.zero;

@@ -23,6 +23,7 @@ namespace Gameplay
         private const int ThrowAnimationLayer = 1;
         private const float TimeStep = 0.1f;
         private const float HalfAccelerationFactor = 0.5f;
+        private const float ReleaseNormalizedTime = 0.2f;
 
         private float _spearRespawnTimer;
         private bool _isThrowing;
@@ -77,7 +78,7 @@ namespace Gameplay
             var stateInfo =  _playerView.playerAnimator.GetCurrentAnimatorStateInfo(ThrowAnimationLayer);
 
             bool isInThrowState = stateInfo.shortNameHash == Throw;
-            if (isInThrowState && stateInfo.normalizedTime >= 0.10f)
+            if (isInThrowState && stateInfo.normalizedTime >= ReleaseNormalizedTime)
             {
                 ThrowSpear();
                 _isThrowing = false;
@@ -101,7 +102,7 @@ namespace Gameplay
         {
             Vector3 arcedDir = CalculateThrowDirection();
 
-            Vector3 startPos = _playerView.spearThrowPoint.position;
+            Vector3 startPos = ThrowOrigin;
             Vector3 startVelocity = arcedDir * Constants.PlayerSettings.ThrowForce;
 
             Vector3[] points = new Vector3[TrajectoryPoints];
@@ -128,6 +129,9 @@ namespace Gameplay
 
             _playerView.playerAnimator.SetBool(IsCharging, true);
             _isThrowing = true;
+
+            if (_playerView.activeRagdoll != null)
+                _playerView.activeRagdoll.BeginThrow();
         }
 
         private void HandleSpearThrowStop()
@@ -139,6 +143,9 @@ namespace Gameplay
 
         private void ThrowSpear()
         {
+            if (_playerView.activeRagdoll != null)
+                _playerView.activeRagdoll.EndThrow();
+
             if (_currentSpearView == null)
                 return;
 
@@ -163,13 +170,15 @@ namespace Gameplay
             _currentSpearView = spearView;
         }
 
+        private Vector3 ThrowOrigin => _currentSpearView.RootPosition;
+
         private Vector3 CalculateThrowDirection()
         {
             Ray ray = _playerView.playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
 
             Vector3 direction =
                 Physics.Raycast(ray, out RaycastHit hit, 100f, ~_playerLayer, QueryTriggerInteraction.Ignore)
-                    ? (hit.point - _playerView.spearThrowPoint.position).normalized
+                    ? (hit.point - ThrowOrigin).normalized
                     : _playerView.playerCamera.transform.forward;
 
             return Quaternion.AngleAxis(-Constants.PlayerSettings.ThrowAngle, _playerView.playerCamera.transform.right) *
@@ -185,7 +194,11 @@ namespace Gameplay
             }
 
             if (_playerView != null)
+            {
                 _playerView.SpearSpawned -= HandleSpearSpawned;
+                if (_playerView.activeRagdoll != null)
+                    _playerView.activeRagdoll.EndThrow(0f);
+            }
 
             if (_trajectoryLine != null)
                 Object.Destroy(_trajectoryLine.gameObject);

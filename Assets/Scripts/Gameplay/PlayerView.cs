@@ -1,7 +1,6 @@
 using System;
 using Mirror;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Gameplay
 {
@@ -12,11 +11,9 @@ namespace Gameplay
 
         public Camera playerCamera;
         public Animator playerAnimator;
-        public Rigidbody playerRigidbody;
+        public ActiveRagdoll activeRagdoll;
         public NetworkAnimator networkAnimator;
         public Transform spearThrowPoint;
-        public GroundChecker feetGroundChecker;
-        public GroundChecker landingGroundChecker;
 
         private void Start()
         {
@@ -28,6 +25,17 @@ namespace Gameplay
         {
             base.OnStartLocalPlayer();
             LocalPlayerStarted?.Invoke(this);
+        }
+
+        public static PlayerView FromCollider(Collider collider)
+        {
+            if (collider == null) return null;
+
+            var part = collider.GetComponentInParent<RagdollPart>();
+            if (part != null && part.Owner != null)
+                return part.Owner.GetComponent<PlayerView>();
+
+            return collider.GetComponentInParent<PlayerView>();
         }
 
         [Command]

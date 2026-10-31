@@ -18,6 +18,9 @@ namespace Gameplay
         [SerializeField] private float maxVisualCorrection = 2f;
         [SerializeField] private float maxOriginDesync = 2f;   
         [SerializeField] private float maxThrowTimeRewind = 0.3f; 
+        [SerializeField] private float hitImpulse = 25f;
+        [SerializeField] private float knockbackSpeed = 4f;
+        [SerializeField] private float knockbackUp = 1.5f;
 
         [SyncVar(hook = nameof(OnOwnerChanged))]
         private uint _ownerNetId;
@@ -39,6 +42,8 @@ namespace Gameplay
         private Transform _spearContainer;
         private bool _isFlying;
         private bool _isStuck;
+        private bool _hitApplied;
+        private ActiveRagdoll _stuckIn;
 
         private readonly RaycastHit[] _hitBuffer = new RaycastHit[16];
 
@@ -84,7 +89,9 @@ namespace Gameplay
 
             spearCollider.enabled = false;
 
-            emptyParent.SetParent(playerView.spearThrowPoint, true);
+            Transform hand = playerView.activeRagdoll.ToDisplay(playerView.spearThrowPoint);
+
+            emptyParent.SetParent(hand, true);
             emptyParent.localPosition = Vector3.zero;
             emptyParent.localRotation = Quaternion.Euler(180, 0, 0);
         }
@@ -171,10 +178,29 @@ namespace Gameplay
                 Vector3 tipTarget = hit.point + dir * stickDepth;
                 Vector3 rootPos = tipTarget - rootRot * _tipLocalPos;
 
-                ApplyStuck(rootPos, rootRot);
+                var part = hit.collider.GetComponentInParent<RagdollPart>();
+                if (part != null && part.Owner == null) part = null;
+                if (part != null) part = part.Owner.GetPart(part.Index);
+
+                ApplyStuck(rootPos, rootRot, part, dir);
 
                 if (isServer)
-                    RpcStuck(rootPos, rootRot);
+                {
+                    if (part != null && part.Owner.TryGetComponent(out NetworkIdentity victim))
+                    {
+                        Transform bone = part.transform;
+                        RpcStuckInBody(
+                            victim.netId,
+                            part.Index,
+                            bone.InverseTransformPoint(rootPos),
+                            Quaternion.Inverse(bone.rotation) * rootRot,
+                            dir);
+                    }
+                    else
+                    {
+                        RpcStuck(rootPos, rootRot);
+                    }
+                }
 
                 return;
             }
@@ -232,7 +258,7 @@ namespace Gameplay
 
                 if (candidate.collider.transform.IsChildOf(emptyParent)) continue;
 
-                var player = candidate.collider.transform.root.GetComponent<PlayerView>();
+                var player = PlayerView.FromCollider(candidate.collider);
                 if (player != null && player.netId == _ownerNetId) continue;
 
                 if (candidate.distance < best)
@@ -251,9 +277,28 @@ namespace Gameplay
         #region Stick
 
         [ClientRpc]
-        private void RpcStuck(Vector3 rootPos, Quaternion rootRot) => ApplyStuck(rootPos, rootRot);
+        private void RpcStuck(Vector3 rootPos, Quaternion rootRot) => ApplyStuck(rootPos, rootRot, null, Vector3.zero);
 
-        private void ApplyStuck(Vector3 rootPos, Quaternion rootRot)
+        [ClientRpc]
+        private void RpcStuckInBody(uint victimNetId, int partIndex, Vector3 localPos, Quaternion localRot, Vector3 dir)
+        {
+            if (NetworkClient.spawned.TryGetValue(victimNetId, out NetworkIdentity victim) &&
+                victim.TryGetComponent(out ActiveRagdoll ragdoll))
+            {
+                var part = ragdoll.GetPart(partIndex);
+                if (part != null)
+                {
+                    Transform bone = part.transform;
+                    ApplyStuck(bone.TransformPoint(localPos), bone.rotation * localRot, part, dir);
+                    return;
+                }
+            }
+
+            if (!_isStuck)
+                ApplyStuck(emptyParent.position, emptyParent.rotation, null, Vector3.zero);
+        }
+
+        private void ApplyStuck(Vector3 rootPos, Quaternion rootRot, RagdollPart part, Vector3 dir)
         {
             _isStuck = true;
             _isFlying = false;
@@ -261,21 +306,63 @@ namespace Gameplay
 
             spearRigidbody.isKinematic = true;
 
+            DetachFromBody();
+
             emptyParent.SetPositionAndRotation(rootPos, rootRot);
             spearRigidbody.transform.SetPositionAndRotation(
                 rootPos + rootRot * _bodyLocalPos,
                 rootRot * _bodyLocalRot);
 
-            spearCollider.enabled = true;
-            spearCollider.isTrigger = false;
+            if (part != null)
+            {
+                emptyParent.SetParent(part.transform, true);
 
-            if (_spearContainer != null)
-                emptyParent.SetParent(_spearContainer, true);
+                spearCollider.isTrigger = false;
+                spearCollider.enabled = true;
 
-            SetLayerRecursively(emptyParent.gameObject, LayerMask.NameToLayer("Ground"));
+                _stuckIn = part.Owner;
+                _stuckIn.SetIgnoreBodyCollisions(spearCollider, true);
+                _stuckIn.Destroying += DetachFromBody;
+
+                if (!_hitApplied)
+                {
+                    _hitApplied = true;
+                    Vector3 tip = rootPos + rootRot * _tipLocalPos;
+
+                    Vector3 flat = new Vector3(dir.x, 0f, dir.z);
+                    flat = flat.sqrMagnitude > 0.0001f ? flat.normalized : Vector3.zero;
+                    Vector3 knockback = flat * knockbackSpeed + Vector3.up * knockbackUp;
+
+                    part.Owner.ApplyHit(part, dir * hitImpulse, tip, knockback);
+                }
+            }
+            else
+            {
+                spearCollider.enabled = true;
+                spearCollider.isTrigger = false;
+
+                if (_spearContainer != null)
+                    emptyParent.SetParent(_spearContainer, true);
+
+                SetLayerRecursively(emptyParent.gameObject, LayerMask.NameToLayer("Ground"));
+            }
 
             Physics.SyncTransforms();
         }
+
+        private void DetachFromBody()
+        {
+            if (_stuckIn == null) return;
+
+            _stuckIn.Destroying -= DetachFromBody;
+            _stuckIn.SetIgnoreBodyCollisions(spearCollider, false);
+            _stuckIn = null;
+
+            if (emptyParent != null)
+                emptyParent.SetParent(_spearContainer, true);
+        }
+
+        private void OnDestroy() => DetachFromBody();
 
         private static void SetLayerRecursively(GameObject go, int layer)
         {
