@@ -1,4 +1,5 @@
 using Gameplay;
+using Gameplay.Iceberg;
 using Services;
 using Services.Networking;
 using StateMachine.Global;
@@ -32,6 +33,7 @@ namespace Installers
         private void BindGameplay()
         {
             Container.Bind<GameplayMediator>().AsSingle();
+            Container.Bind<IcebergMediator>().AsSingle(); 
         }
 
         private void BindUI()
@@ -63,6 +65,9 @@ namespace Installers
             
             Container.BindInterfacesAndSelfTo<PlayerMovement>().AsSingle();
             Container.BindInterfacesAndSelfTo<SpearThrow>().AsSingle();
+            
+            Container.Bind<IcebergBuilder>().AsSingle();
+            Container.BindInterfacesAndSelfTo<IcebergMelt>().AsSingle(); 
             
             Container.Bind<IAssetProviderService>().To<AssetProviderService>().AsSingle();
         }
