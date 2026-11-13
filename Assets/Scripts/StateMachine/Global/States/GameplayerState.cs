@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 using Zenject;
 using StateMachine.Base;
 using UI;
+using Gameplay.Iceberg;
 
 namespace StateMachine.Global.States
 {
@@ -18,6 +19,7 @@ namespace StateMachine.Global.States
         private readonly UIGameMediator _uiGameMediator;
         private readonly GameplayMediator _gameplayMediator;
         private readonly MenuMessageService _menuMessages;
+        private readonly IcebergMediator _icebergMediator;
 
         private GameplayPayload _payload;
 
@@ -30,6 +32,7 @@ namespace StateMachine.Global.States
             InputService inputService,
             UIGameMediator uiGameMediator,
             GameplayMediator gameplayMediator,
+            IcebergMediator icebergMediator,
             MenuMessageService menuMessages) : base(stateMachine)
         {
             _stateMachine = stateMachine;
@@ -37,6 +40,7 @@ namespace StateMachine.Global.States
             _uiGameMediator = uiGameMediator;
             _gameplayMediator = gameplayMediator;
             _menuMessages = menuMessages;
+            _icebergMediator = icebergMediator;
         }
 
         public override void Enter(GameplayPayload payload)
@@ -52,6 +56,7 @@ namespace StateMachine.Global.States
         {
             if (scene.name == SceneName)
             {
+                _icebergMediator.Construct();
                 _uiGameMediator.Construct();
                 _gameplayMediator.Construct();
                 _inputService.Construct();
@@ -107,6 +112,7 @@ namespace StateMachine.Global.States
 
         public override void Exit()
         {
+            _icebergMediator.Dispose();
             _uiGameMediator.Dispose();
             _gameplayMediator.Dispose();
             _inputService.Dispose();
