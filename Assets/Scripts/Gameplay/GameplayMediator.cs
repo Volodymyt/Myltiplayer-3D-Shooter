@@ -14,6 +14,7 @@ namespace Gameplay
         private readonly PlayerMovement _playerMovement;
         private readonly SpearThrow _spearThrow;
         private readonly NetworkConnectionService _network;
+        private readonly HealthSystem _healthSystem;
 
         public static Transform SpearContainer { get; private set; }
         public event Action<string> RoomCodeReady;
@@ -26,12 +27,14 @@ namespace Gameplay
             GenericFactory genericFactory,
             PlayerMovement playerMovement,
             SpearThrow spearThrow,
-            NetworkConnectionService network)
+            NetworkConnectionService network,
+            HealthSystem healthSystem)
         {
             _genericFactory = genericFactory;
             _playerMovement = playerMovement;
             _spearThrow = spearThrow;
             _network = network;
+            _healthSystem = healthSystem;
         }
 
         public void Construct()
@@ -45,6 +48,8 @@ namespace Gameplay
             PlayerView.LocalPlayerStarted += HandleLocalPlayerStarted;
             _network.RoomCodeReady += HandleRoomCodeReady;
             _network.ConnectionLost += HandleConnectionLost;
+
+            SpearView.PlayerHit += _healthSystem.TakeDamage;
         }
 
         public Task StartNetworkAsync(bool isHost, string joinCode = null) =>
@@ -69,12 +74,13 @@ namespace Gameplay
             _playerMovement.Construct(playerView, true);
             _spearThrow.Construct(playerView);
         }
-
+        
         public void Dispose()
         {
             PlayerView.LocalPlayerStarted -= HandleLocalPlayerStarted;
             _network.RoomCodeReady -= HandleRoomCodeReady;
             _network.ConnectionLost -= HandleConnectionLost;
+            SpearView.PlayerHit -= _healthSystem.TakeDamage;
             _network.Stop();
 
             if (_sceneCamera != null)

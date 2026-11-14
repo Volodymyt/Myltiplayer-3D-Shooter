@@ -65,6 +65,7 @@ namespace Installers
             
             Container.BindInterfacesAndSelfTo<PlayerMovement>().AsSingle();
             Container.BindInterfacesAndSelfTo<SpearThrow>().AsSingle();
+            Container.BindInterfacesAndSelfTo<HealthSystem>().AsSingle();
             
             Container.Bind<IcebergBuilder>().AsSingle();
             Container.BindInterfacesAndSelfTo<IcebergMelt>().AsSingle(); 

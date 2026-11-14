@@ -7,6 +7,7 @@ public class Constants
     
     public const string LobbyPath = "Lobby";
     public const string GameHudPath = "GameHud";
+    public const string LocalHealthBarPath = "LocalHealthBar";
 
     public class PlayerSettings
     {
@@ -19,6 +20,9 @@ public class Constants
         public const float ThrowForce = 20f;
         public const float RespawnDelay = 2f;
         public const float ThrowAngle = 15f;
+        
+        public const int MaxHealth = 100;
+        public const int SpearDamage = 10;
     }
     
     public class IcebergMeltSettings

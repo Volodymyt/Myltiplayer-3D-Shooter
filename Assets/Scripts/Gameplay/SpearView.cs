@@ -22,6 +22,8 @@ namespace Gameplay
         [SerializeField] private float knockbackSpeed = 4f;
         [SerializeField] private float knockbackUp = 1.5f;
 
+        public static event Action<PlayerView, int> PlayerHit;
+        
         [SyncVar(hook = nameof(OnOwnerChanged))]
         private uint _ownerNetId;
 
@@ -188,6 +190,8 @@ namespace Gameplay
                 {
                     if (part != null && part.Owner.TryGetComponent(out NetworkIdentity victim))
                     {
+                        PlayerHit?.Invoke(part.Owner.GetComponent<PlayerView>(), Constants.PlayerSettings.SpearDamage);
+                        
                         Transform bone = part.transform;
                         RpcStuckInBody(
                             victim.netId,

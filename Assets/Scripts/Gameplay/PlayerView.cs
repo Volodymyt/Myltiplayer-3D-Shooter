@@ -9,12 +9,18 @@ namespace Gameplay
     {
         public static event Action<PlayerView> LocalPlayerStarted;
         public event Action<SpearView> SpearSpawned;
+        public event Action<int> HealthChanged;
 
         public Camera playerCamera;
         public Animator playerAnimator;
         public ActiveRagdoll activeRagdoll;
         public NetworkAnimator networkAnimator;
         public Transform spearThrowPoint;
+
+        [SyncVar(hook = nameof(OnHealthChanged))]
+        private int _health;
+        
+        public int Health => _health;
 
         private void Start()
         {
@@ -28,6 +34,22 @@ namespace Gameplay
             }
         }
 
+        public override void OnStartServer()
+        {
+            ChangeHealth(Constants.PlayerSettings.MaxHealth);
+        }
+
+        [Server]
+        public void ChangeHealth(int newHealth)
+        {
+            _health = newHealth;
+        }
+        
+        private void OnHealthChanged(int oldHealth, int newHealth)
+        {
+            HealthChanged?.Invoke(newHealth);
+        }
+        
         private void HandleIcebergReady()
         {
             IcebergView.Ready -= HandleIcebergReady;
