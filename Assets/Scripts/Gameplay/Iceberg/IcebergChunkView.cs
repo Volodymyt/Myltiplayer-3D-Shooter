@@ -42,7 +42,7 @@ namespace Gameplay.Iceberg
             meshRenderer = GetComponent<MeshRenderer>();
         }
 
-        public void Setup(int index, Mesh mesh, Vector3 localCenter, Vector3 outward)
+        public void Setup(int index, Mesh mesh, Mesh colliderMesh, Vector3 localCenter, Vector3 outward)
         {
             Index = index;
             name = $"Chunk {index}";
@@ -56,7 +56,7 @@ namespace Gameplay.Iceberg
             body.rotation = transform.rotation;
 
             meshFilter.sharedMesh = mesh;
-            meshCollider.sharedMesh = mesh;
+            meshCollider.sharedMesh = colliderMesh;
 
             Material material = meshRenderer.sharedMaterial;
             Color iceColor = material != null && material.HasProperty(BaseColorId)

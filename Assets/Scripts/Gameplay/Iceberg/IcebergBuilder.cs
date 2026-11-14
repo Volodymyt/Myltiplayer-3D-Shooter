@@ -369,17 +369,20 @@ namespace Gameplay.Iceberg
             }
 
             data.ChunkMeshes = new Mesh[count];
+            data.ChunkColliderMeshes = new Mesh[count];
             data.ChunkCenters = new Vector3[count];
 
             for (int s = 0; s < count; s++)
             {
-                if (chunkTriangles[s].Count == 0) continue; 
+                if (chunkTriangles[s].Count == 0) continue;
 
-                data.ChunkMeshes[s] = MakeChunkMesh(s, chunkTriangles[s], normals, out data.ChunkCenters[s]);
+                data.ChunkMeshes[s] = MakeChunkMesh(s, chunkTriangles[s], normals,
+                    out data.ChunkCenters[s], out Mesh colliderMesh);
+                data.ChunkColliderMeshes[s] = colliderMesh;
             }
         }
 
-        private Mesh MakeChunkMesh(int index, List<int> triangles, Vector3[] normals, out Vector3 center)
+        private Mesh MakeChunkMesh(int index, List<int> triangles, Vector3[] normals, out Vector3 center, out Mesh collider)
         {
             float bottom = -_shape.seaDepth;
             var usedPoints = new HashSet<int>(triangles);
@@ -409,6 +412,12 @@ namespace Gameplay.Iceberg
 
             foreach (int p in triangles)
                 chunkTriangles.Add(topIndex[p]);
+
+            var colliderMesh = new Mesh { name = $"Chunk {index} collider" };
+            colliderMesh.SetVertices(vertices.GetRange(0, usedPoints.Count));
+            colliderMesh.SetTriangles(new List<int>(chunkTriangles), 0);
+            colliderMesh.RecalculateBounds();
+            collider = colliderMesh;
 
             var edges = new HashSet<(int, int)>();
             for (int t = 0; t < triangles.Count; t += 3)

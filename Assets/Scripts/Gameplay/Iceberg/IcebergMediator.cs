@@ -102,7 +102,7 @@ namespace Gameplay.Iceberg
                 Vector3 center = _data.ChunkCenters[i];
                 Vector3 outward = _view.ChunksRoot.TransformDirection(new Vector3(center.x, 0f, center.z).normalized);
 
-                chunk.Setup(i, _data.ChunkMeshes[i], center, outward);
+                chunk.Setup(i, _data.ChunkMeshes[i], _data.ChunkColliderMeshes[i], center, outward);
 
                 _chunks[i] = chunk;
             }

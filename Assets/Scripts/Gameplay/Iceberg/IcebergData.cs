@@ -7,7 +7,8 @@ namespace Gameplay.Iceberg
     {
         public List<Vector2> SeedPoints { get; set; }  
         public Mesh[] ChunkMeshes { get; set; }            
-        public Vector3[] ChunkCenters { get; set; }       
+        public Mesh[] ChunkColliderMeshes { get; set; }
+        public Vector3[] ChunkCenters { get; set; }
         public HashSet<int>[] ChunkNeighbors { get; set; } 
 
         public int Checksum { get; set; }                   
@@ -21,6 +22,10 @@ namespace Gameplay.Iceberg
         {
             foreach (Mesh mesh in ChunkMeshes)
                 DestroyMesh(mesh);
+
+            if (ChunkColliderMeshes != null)
+                foreach (Mesh mesh in ChunkColliderMeshes)
+                    DestroyMesh(mesh);
 
             DestroyMesh(SteepMesh);
         }
