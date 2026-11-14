@@ -86,6 +86,7 @@ namespace Gameplay
         public bool IsDead { get; private set; }
         public bool IsGrounded { get; private set; }
         public bool HasAuthority { get; private set; }
+        public bool IsFrozen { get; private set; }
         public float Yaw { get; set; }
         public Vector3 MoveInput => _moveInput;
         public float Strength => _strength;
@@ -376,11 +377,40 @@ namespace Gameplay
         public void SetAuthority(bool hasAuthority)
         {
             HasAuthority = hasAuthority;
-            if (!IsDead && ragdollHips != null)
+            if (!IsDead && !IsFrozen && ragdollHips != null)
                 ragdollHips.isKinematic = !hasAuthority;
 
             if (hasAuthority && ownerUsesRemoteLook && !IsDead && _visualModel == null)
                 CreateVisualCopy();
+        }
+
+        public void SetFrozen(bool frozen)
+        {
+            if (IsFrozen == frozen || IsDead) return;
+            IsFrozen = frozen;
+
+            foreach (var rb in _bodies)
+                ApplyFrozenState(rb, rb == ragdollHips && !HasAuthority);
+
+            if (_visualBodies != null)
+                foreach (var rb in _visualBodies)
+                    ApplyFrozenState(rb, rb == _visualHips);
+        }
+
+        private void ApplyFrozenState(Rigidbody rb, bool kinematicWhenActive)
+        {
+            if (IsFrozen)
+            {
+                rb.isKinematic = true;
+                return;
+            }
+
+            rb.isKinematic = kinematicWhenActive;
+            if (!rb.isKinematic)
+            {
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+            }
         }
 
         public void SetMoveInput(Vector3 worldVelocity)
@@ -391,7 +421,7 @@ namespace Gameplay
 
         public bool Jump()
         {
-            if (!HasAuthority || IsDead || !IsGrounded || _strength < 0.5f) return false;
+            if (!HasAuthority || IsDead || IsFrozen || !IsGrounded || _strength < 0.5f) return false;
 
             foreach (var rb in _bodies)
             {
@@ -417,7 +447,7 @@ namespace Gameplay
         {
             if (part == null || part.Owner != this) return;
 
-            if (HasAuthority && knockback != Vector3.zero)
+            if (HasAuthority && !IsFrozen && knockback != Vector3.zero)
                 foreach (var body in _bodies)
                     body.AddForce(knockback, ForceMode.VelocityChange);
 
@@ -439,6 +469,7 @@ namespace Gameplay
         public void Die(Vector3 impulse = default, RagdollPart hitPart = null)
         {
             if (IsDead) return;
+            SetFrozen(false);
             IsDead = true;
             _strength = 0f;
             _moveInput = Vector3.zero;
@@ -556,7 +587,7 @@ namespace Gameplay
         private void FixedUpdate()
         {
             if (ragdollHips == null) return;
-            if (IsDead) return;
+            if (IsDead || IsFrozen) return;
 
             float dt = Time.fixedDeltaTime;
             UpdateKnockout(dt);
@@ -806,7 +837,7 @@ namespace Gameplay
             for (int i = 0; i < _visualBodies.Length; i++)
             {
                 var rb = _visualBodies[i];
-                rb.isKinematic = i == hipsIndex;
+                rb.isKinematic = IsFrozen || i == hipsIndex;
                 rb.useGravity = true;
                 var part = rb.GetComponent<RagdollPart>();
                 if (part == null) part = rb.gameObject.AddComponent<RagdollPart>();

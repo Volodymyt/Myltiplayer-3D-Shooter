@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Gameplay;
+using Mirror;
 using Services;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -61,10 +62,18 @@ namespace StateMachine.Global.States
                 _gameplayMediator.Construct();
                 _inputService.Construct();
 
-                _ = _gameplayMediator.StartNetworkAsync(_isHost, _joinCode);
+                _ = StartNetworkAsync();
 
                 SceneManager.sceneLoaded -= OnSceneLoaded;
             }
+        }
+
+        private async Task StartNetworkAsync()
+        {
+            await _gameplayMediator.StartNetworkAsync(_isHost, _joinCode);
+
+            if (_isHost && NetworkServer.active)
+                _icebergMediator.SpawnIceberg();
         }
 
         private void Subscribe()

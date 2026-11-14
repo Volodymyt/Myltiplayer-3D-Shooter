@@ -2,7 +2,8 @@ public class Constants
 {
     public const string NetworkManagerPath = "NetworkManager";
     public const string SpearPath = "Spear";
-    public const string IcebergChunkPath = "IcebergChunk"; 
+    public const string IcebergPath = "Iceberg";
+    public const string IcebergChunkPath = "IcebergChunk";
     
     public const string LobbyPath = "Lobby";
     public const string GameHudPath = "GameHud";

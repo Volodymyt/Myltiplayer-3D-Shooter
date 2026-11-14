@@ -1,4 +1,5 @@
 using System;
+using Mirror;
 using Services;
 using UnityEngine;
 
@@ -10,22 +11,43 @@ namespace Gameplay.Iceberg
         private readonly IcebergMelt _melt;
         private readonly GenericFactory _genericFactory;
 
+        private readonly IAssetProviderService _assetProviderService;
+
+        private GameObject _icebergPrefab;
         private IcebergView _view;
         private IcebergData _data;
         private IcebergChunkView[] _chunks = Array.Empty<IcebergChunkView>();
 
-        public IcebergMediator(IcebergBuilder builder, IcebergMelt melt, GenericFactory genericFactory)
+        public IcebergMediator(
+            IcebergBuilder builder,
+            IcebergMelt melt,
+            GenericFactory genericFactory,
+            IAssetProviderService assetProviderService)
         {
             _builder = builder;
             _melt = melt;
             _genericFactory = genericFactory;
+            _assetProviderService = assetProviderService;
         }
 
         public void Construct()
         {
+            _icebergPrefab = _assetProviderService.LoadAssetFromResources<GameObject>(Constants.IcebergPath);
+
+            if (_icebergPrefab != null)
+                NetworkClient.RegisterPrefab(_icebergPrefab);
+
             IcebergView.ServerStarted += HandleServerStarted;
             IcebergView.ClientStarted += HandleClientStarted;
             _melt.ChunkBreakRequested += HandleChunkBreakRequested;
+        }
+
+        public void SpawnIceberg()
+        {
+            if (!NetworkServer.active) return;
+
+            var view = _genericFactory.Create<IcebergView>(Constants.IcebergPath);
+            NetworkServer.Spawn(view.gameObject);
         }
 
         private void HandleServerStarted(IcebergView view)
@@ -64,6 +86,7 @@ namespace Gameplay.Iceberg
             }
 
             view.ChunkBreakReceived += HandleChunkBreakReceived;
+            IcebergView.NotifyReady();
         }
 
         private void CreateChunks()
@@ -104,7 +127,12 @@ namespace Gameplay.Iceberg
                 _view.ChunkBreakReceived -= HandleChunkBreakReceived;
 
             _melt.Dispose();
+            IcebergView.ResetReady();
 
+            if (_icebergPrefab != null)
+                NetworkClient.UnregisterPrefab(_icebergPrefab);
+
+            _icebergPrefab = null;
             _data?.Destroy();
 
             _data = null;

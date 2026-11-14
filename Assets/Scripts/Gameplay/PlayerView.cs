@@ -1,4 +1,5 @@
 using System;
+using Gameplay.Iceberg;
 using Mirror;
 using UnityEngine;
 
@@ -19,7 +20,21 @@ namespace Gameplay
         {
             if (!isLocalPlayer)
                 playerCamera.enabled = false;
+            
+            if (!IcebergView.IsReady)
+            {
+                activeRagdoll.SetFrozen(true);
+                IcebergView.Ready += HandleIcebergReady;
+            }
         }
+
+        private void HandleIcebergReady()
+        {
+            IcebergView.Ready -= HandleIcebergReady;
+            activeRagdoll.SetFrozen(false);
+        }
+
+        private void OnDestroy() => IcebergView.Ready -= HandleIcebergReady;
 
         public override void OnStartLocalPlayer()
         {

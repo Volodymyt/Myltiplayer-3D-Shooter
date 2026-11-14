@@ -9,7 +9,18 @@ namespace Gameplay.Iceberg
     {
         public static event Action<IcebergView> ServerStarted; 
         public static event Action<IcebergView> ClientStarted;
+        public static event Action Ready;
         public event Action<int> ChunkBreakReceived;
+
+        public static bool IsReady { get; private set; }
+
+        public static void NotifyReady()
+        {
+            IsReady = true;
+            Ready?.Invoke();
+        }
+
+        public static void ResetReady() => IsReady = false;
 
         [SerializeField] private IcebergShapeSettings shape = new IcebergShapeSettings();
 
