@@ -13,8 +13,8 @@ public class Constants
         public const float MoveSpeed = 3f;
         
         public const float MouseSensitivity = 15f;
-        public const float MinXRotation = -20;
-        public const float MaxXRotation = 20;
+        public const float MinXRotation = -5;
+        public const float MaxXRotation = 25;
         
         public const float ThrowForce = 20f;
         public const float RespawnDelay = 2f;

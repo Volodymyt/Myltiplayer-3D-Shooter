@@ -373,7 +373,6 @@ MonoBehaviour:
   playerCamera: {fileID: 748731902492998222}
   playerAnimator: {fileID: 6419203525616204615}
   activeRagdoll: {fileID: 2577551320217982151}
-  ragdollSync: {fileID: 7653311892595073438}
   networkAnimator: {fileID: 8329248901478037506}
   spearThrowPoint: {fileID: 567584104062544493}
 --- !u!114 &2454037519748057198
@@ -474,7 +473,6 @@ MonoBehaviour:
   jumpVelocity: 8
   slipperyFeet: 1
   feetFriction: 0.15
-  roundFeet: 0
   walkHipsLift: 0.06
   groundMask:
     serializedVersion: 2
@@ -2413,7 +2411,7 @@ Transform:
   m_GameObject: {fileID: 5143942040348639842}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.88, z: -3.5}
+  m_LocalPosition: {x: 0, y: 3, z: -4}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
